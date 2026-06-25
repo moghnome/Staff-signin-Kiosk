@@ -237,36 +237,62 @@ def register():
 def login():
 
     auto_signout_expired_users()
+login_id = request.form.get('login_id', '').strip()
+pin = request.form.get('pin')
 
-    login_id = request.form['login_id']
-    pin = request.form.get('pin')
+latitude = request.form.get('latitude')
+longitude = request.form.get('longitude')
 
-    latitude = request.form.get('latitude')
-    longitude = request.form.get('longitude')
+# ==================================================
+# CHECK LOCATION ACCESS
+# ==================================================
+if not latitude or not longitude:
+    return render_template(
+        "login.html",
+        error="Please allow location access before signing in."
+    )
 
-    # LOCATION REQUIRED
-    if not latitude or not longitude:
-        return render_template(
-            "login.html",
-            error="Location access is required."
-        )
-
+# ==================================================
+# VALIDATE GPS VALUES
+# ==================================================
+try:
     latitude = float(latitude)
     longitude = float(longitude)
 
-    # DISTANCE CHECK
+except ValueError:
+    return render_template(
+        "login.html",
+        error="Invalid GPS location received."
+    )
+
+# ==================================================
+# CHECK DISTANCE AGAINST ALL SITES
+# ==================================================
+allowed = False
+
+for site in SITES:
+
     distance = calculate_distance(
         latitude,
         longitude,
-        SITE_LAT,
-        SITE_LON
+        site["lat"],
+        site["lon"]
     )
 
-    if distance > MAX_DISTANCE:
-        return render_template(
-            "login.html",
-            error=f"You must be onsite to sign in. Distance: {int(distance)} metres."
-        )
+    if distance <= MAX_DISTANCE:
+        allowed = True
+        break
+
+# ==================================================
+# BLOCK OFFSITE USERS
+# ==================================================
+if not allowed:
+
+    return render_template(
+        "login.html",
+        error=f"You must be onsite to sign in. Current distance: {int(distance)} metres."
+    )
+   
 
     # ADMIN LOGIN
     if login_id.lower() == ALLOWED_ADMIN_EMAIL:
