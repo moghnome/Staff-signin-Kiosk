@@ -24,11 +24,9 @@ ADMIN_PIN = "admin123#1415ESEC"
 # ==================================================
 database_url = os.environ.get("DATABASE_URL")
 
-# LOCAL SQLITE FALLBACK
 if not database_url:
     database_url = "sqlite:///database.db"
 
-# FIX RENDER POSTGRES URL
 if database_url.startswith("postgres://"):
     database_url = database_url.replace(
         "postgres://",
