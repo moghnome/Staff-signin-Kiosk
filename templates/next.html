@@ -20,14 +20,12 @@
             height: 100vh;
         }
 
-        /* LEFT SIDE */
         .left {
             width: 50%;
             background: url("{{ url_for('static', filename='Outsideimages.jpg') }}") no-repeat center;
             background-size: cover;
         }
 
-        /* RIGHT SIDE */
         .right {
             width: 50%;
             background: linear-gradient(135deg, #c62828, #e53935);
@@ -37,7 +35,6 @@
             position: relative;
         }
 
-        /* LOGO */
         .logo {
             position: absolute;
             top: 20px;
@@ -45,14 +42,13 @@
             width: 90px;
         }
 
-        /* BOX */
         .box {
             background: white;
             padding: 40px 30px;
             border-radius: 12px;
             text-align: center;
             width: 320px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         h2 {
@@ -80,7 +76,6 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 15px;
-            transition: 0.3s;
         }
 
         button:hover {
@@ -91,9 +86,7 @@
             text-decoration: none;
         }
 
-        /* MOBILE */
         @media (max-width: 768px) {
-
             .left {
                 display: none;
             }
@@ -108,13 +101,11 @@
         }
     </style>
 
-    <!-- AUTO REDIRECT -->
     <script>
         let timeout;
 
         function resetTimer() {
             clearTimeout(timeout);
-
             timeout = setTimeout(function () {
                 window.location.href = "/";
             }, 30000);
@@ -135,11 +126,7 @@
 
     <div class="right">
 
-        <img
-            src="{{ url_for('static', filename='logo.png') }}"
-            class="logo"
-            alt="Logo"
-        >
+        <img src="{{ url_for('static', filename='logo.png') }}" class="logo" alt="Logo">
 
         <div class="box">
 
@@ -147,20 +134,14 @@
 
             <p>Please proceed to the next visitor.</p>
 
-            <p class="timer">
-                Or return to the Home Page...
-            </p>
+            <p class="timer">Or return to the Home Page...</p>
 
             <a href="/returning">
-                <button>
-                    ➡ Next Visitor
-                </button>
+                <button>➡ Next Visitor</button>
             </a>
 
             <a href="/">
-                <button>
-                    ⬅ Back to Home
-                </button>
+                <button>⬅ Back to Home</button>
             </a>
 
         </div>
