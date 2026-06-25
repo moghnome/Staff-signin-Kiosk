@@ -45,10 +45,22 @@ def now_sa():
     return datetime.utcnow() + timedelta(hours=9, minutes=30)
 
 # ==================================================
-# SITE LOCATION
+# ALLOWED SITE LOCATIONS
 # ==================================================
-SITE_LAT = -34.9622
-SITE_LON = 138.5485
+
+SITES = [
+    {
+        "name": "Parafield Gardens",
+        "lat": -34.7926,
+        "lon": 138.6127
+    },
+    {
+        "name": "Plympton",
+        "lat": -34.9622,
+        "lon": 138.5485
+    }
+]
+# Allowed distance in metres
 MAX_DISTANCE = 150
 
 # ==================================================
