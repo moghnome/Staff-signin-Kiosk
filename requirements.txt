@@ -1,3 +1,2 @@
 Flask==3.0.3
 gunicorn==22.0.0
-postgresql://staff_signin_db_user:QWTgOKqCCPAsjNCoc4cPLInUeGVVykrN@dpg-d8ttvi00697c73d2uldg-a.oregon-postgres.render.com/staff_signin_db
