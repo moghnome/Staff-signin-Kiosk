@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f4f4;
+        padding:15px;
+    }
+
+    .container{
+        width:100%;
+        max-width:500px;
+        margin:auto;
+        background:white;
+        padding:20px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1,h2,h3{
+        text-align:center;
+        margin-bottom:20px;
+        color:#333;
+    }
+
+    input,
+    select,
+    textarea,
+    button{
+        width:100%;
+        padding:14px;
+        margin-top:10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:16px;
+    }
+
+    button{
+        background:#800000;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#5e0000;
+    }
+
+    a{
+        text-decoration:none;
+    }
+
+    .card{
+        background:#fafafa;
+        padding:15px;
+        margin-top:15px;
+        border-radius:10px;
+        border:1px solid #ddd;
+    }
+
+    .table-container{
+        overflow-x:auto;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+        min-width:600px;
+    }
+
+    table th,
+    table td{
+        border:1px solid #ccc;
+        padding:10px;
+        text-align:left;
+        font-size:14px;
+    }
+
+    table th{
+        background:#800000;
+        color:white;
+    }
+
+    .footer{
+        margin-top:20px;
+        text-align:center;
+        font-size:13px;
+        color:#555;
+    }
+
+    @media screen and (max-width:600px){
+
+        body{
+            padding:10px;
+        }
+
+        .container{
+            padding:15px;
+        }
+
+        h1{
+            font-size:24px;
+        }
+
+        h2{
+            font-size:20px;
+        }
+
+        input,
+        select,
+        textarea,
+        button{
+            font-size:15px;
+            padding:12px;
+        }
+
+        table th,
+        table td{
+            font-size:12px;
+            padding:8px;
+        }
+    }
+</style>
+
+    <title>Welcome</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+
+        .left {
+            width: 50%;
+            background: url("{{ url_for('static', filename='ashford_special_school.jpg') }}") no-repeat center;
+            background-size: cover;
+        }
+
+        .right {
+            width: 50%;
+            background: linear-gradient(135deg, #c62828, #e53935);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 90px;
+        }
+
+        .box {
+            background: white;
+            padding: 45px 35px;
+            border-radius: 12px;
+            text-align: center;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #a61c1c;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* ✅ NEW LABEL STYLE */
+        .footer-label {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #660000;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .left {
+                display: none;
+            }
+
+            .right {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- AUTO REDIRECT SCRIPT -->
+    <script>
+        let timeout;
+
+        function resetTimer() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                window.location.href = "/";
+            }, 30000); // 30 seconds
+        }
+
+        // Reset timer on any interaction
+        window.onload = resetTimer;
+        document.onmousemove = resetTimer;
+        document.onkeypress = resetTimer;
+        document.ontouchstart = resetTimer;
+        document.onclick = resetTimer;
+    </script>
+
+</head>
+
+<body>
+
+<div class="left"></div>
+
+<div class="right">
+
+    <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+
+    <div class="box">
+        <h1>Welcome</h1>
+
+        <a href="/get-started">
+            <button>Get Started</button>
+        </a>
+
+        <a href="/signout">
+            <button>Sign Out</button>
+        </a>
+
+    </div>
+
+</div>
+
+<!-- ✅ NEW LABEL -->
+<div class="footer-label">
+    This application has been developed by the author. All rights are reserved.
+
+</div>
+
+</body>
+</html>

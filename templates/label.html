@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Print Label</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    padding:15px;
+}
+
+/* CARD */
+.container{
+    width:100%;
+    max-width:500px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* HEADINGS */
+h2{
+    text-align:center;
+    margin-bottom:20px;
+    color:#333;
+}
+
+/* TEXT */
+p{
+    margin-top:15px;
+    font-size:18px;
+}
+
+/* PRINT BUTTON */
+.print-btn{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#800000;
+    color:white;
+    border:none;
+    padding:14px 22px;
+    border-radius:10px;
+    font-size:16px;
+    cursor:pointer;
+    font-weight:bold;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    z-index:999;
+}
+
+.print-btn:hover{
+    background:#5e0000;
+}
+
+/* MOBILE */
+@media screen and (max-width:600px){
+
+    body{
+        padding:10px;
+    }
+
+    .container{
+        padding:15px;
+    }
+
+    p{
+        font-size:16px;
+    }
+
+    .print-btn{
+        bottom:15px;
+        right:15px;
+        padding:12px 18px;
+        font-size:15px;
+    }
+}
+
+/* HIDE BUTTON WHEN PRINTING */
+@media print{
+
+    .print-btn{
+        display:none;
+    }
+
+    body{
+        background:white;
+    }
+
+    .container{
+        box-shadow:none;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Visitor Pass</h2>
+
+    <p><strong>Name:</strong> {{ name }}</p>
+
+    <p><strong>Role:</strong> {{ role }}</p>
+
+    <p><strong>Sign-in:</strong> {{ signin_time }}</p>
+
+</div>
+
+<!-- PRINT BUTTON -->
+<button class="print-btn" onclick="window.print()">
+
+    Print
+
+</button>
+
+<!-- AUTO REDIRECT SCRIPT -->
+<script>
+
+let timeout;
+
+function resetTimer() {
+
+    clearTimeout(timeout);
+
+    timeout = setTimeout(function () {
+
+        window.location.href = "/";
+
+    }, 30000);
+
+}
+
+function setupActivityTracking() {
+
+    window.addEventListener("load", resetTimer);
+
+    document.addEventListener("mousemove", resetTimer);
+    document.addEventListener("keypress", resetTimer);
+    document.addEventListener("click", resetTimer);
+    document.addEventListener("touchstart", resetTimer);
+
+}
+
+setupActivityTracking();
+
+</script>
+
+</body>

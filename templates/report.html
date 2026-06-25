@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f4f4;
+        padding:15px;
+    }
+
+    .container{
+        width:100%;
+        max-width:500px;
+        margin:auto;
+        background:white;
+        padding:20px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1,h2,h3{
+        text-align:center;
+        margin-bottom:20px;
+        color:#333;
+    }
+
+    input,
+    select,
+    textarea,
+    button{
+        width:100%;
+        padding:14px;
+        margin-top:10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:16px;
+    }
+
+    button{
+        background:#800000;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#5e0000;
+    }
+
+    a{
+        text-decoration:none;
+    }
+
+    .card{
+        background:#fafafa;
+        padding:15px;
+        margin-top:15px;
+        border-radius:10px;
+        border:1px solid #ddd;
+    }
+
+    .table-container{
+        overflow-x:auto;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+        min-width:600px;
+    }
+
+    table th,
+    table td{
+        border:1px solid #ccc;
+        padding:10px;
+        text-align:left;
+        font-size:14px;
+    }
+
+    table th{
+        background:#800000;
+        color:white;
+    }
+
+    .footer{
+        margin-top:20px;
+        text-align:center;
+        font-size:13px;
+        color:#555;
+    }
+
+    @media screen and (max-width:600px){
+
+        body{
+            padding:10px;
+        }
+
+        .container{
+            padding:15px;
+        }
+
+        h1{
+            font-size:24px;
+        }
+
+        h2{
+            font-size:20px;
+        }
+
+        input,
+        select,
+        textarea,
+        button{
+            font-size:15px;
+            padding:12px;
+        }
+
+        table th,
+        table td{
+            font-size:12px;
+            padding:8px;
+        }
+    }
+</style>
+
+    <title>Report</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            width: 80px;
+        }
+
+        h2 {
+            margin: 0;
+        }
+
+        /* 🔍 Search Bar */
+        .search-box {
+            margin: 15px 0;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        /* Export buttons */
+        .export-buttons {
+            margin: 15px 0;
+        }
+
+        .export-buttons a {
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .export-buttons button {
+            padding: 8px 12px;
+            background-color: #c62828;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #c62828;
+            color: white;
+        }
+
+        .note-input {
+            width: 90%;
+            padding: 6px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+        }
+
+        .save-btn {
+            margin-top: 5px;
+            padding: 6px 10px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f4f4;
+        padding:15px;
+    }
+
+    .container{
+        width:100%;
+        max-width:500px;
+        margin:auto;
+        background:white;
+        padding:20px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1,h2,h3{
+        text-align:center;
+        margin-bottom:20px;
+        color:#333;
+    }
+
+    input,
+    select,
+    textarea,
+    button{
+        width:100%;
+        padding:14px;
+        margin-top:10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:16px;
+    }
+
+    button{
+        background:#800000;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#5e0000;
+    }
+
+    a{
+        text-decoration:none;
+    }
+
+    .card{
+        background:#fafafa;
+        padding:15px;
+        margin-top:15px;
+        border-radius:10px;
+        border:1px solid #ddd;
+    }
+
+    .table-container{
+        overflow-x:auto;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+        min-width:600px;
+    }
+
+    table th,
+    table td{
+        border:1px solid #ccc;
+        padding:10px;
+        text-align:left;
+        font-size:14px;
+    }
+
+    table th{
+        background:#800000;
+        color:white;
+    }
+
+    .footer{
+        margin-top:20px;
+        text-align:center;
+        font-size:13px;
+        color:#555;
+    }
+
+    @media screen and (max-width:600px){
+
+        body{
+            padding:10px;
+        }
+
+        .container{
+            padding:15px;
+        }
+
+        h1{
+            font-size:24px;
+        }
+
+        h2{
+            font-size:20px;
+        }
+
+        input,
+        select,
+        textarea,
+        button{
+            font-size:15px;
+            padding:12px;
+        }
+
+        table th,
+        table td{
+            font-size:12px;
+            padding:8px;
+        }
+    }
+</style>
+
+<body>
+
+<!-- ✅ Header -->
+<div class="header">
+    <h2>Visitor Report</h2>
+    <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+</div>
+
+<!-- 🔍 SEARCH BAR -->
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search by name, mobile, role...">
+</div>
+
+<!-- ✅ Export Buttons -->
+<div class="export-buttons">
+    <a href="/export/csv">
+        <button>⬇ Export CSV</button>
+    </a>
+</div>
+
+<!-- ✅ Table -->
+<table id="reportTable">
+    <tr>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>Role</th>
+        <th>Sign In</th>
+        <th>Sign Out</th>
+        <th>NOTE</th>
+    </tr>
+
+    {% for row in data %}
+    <tr>
+        <td>{{ row[0] }}</td>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}</td>
+        <td>{{ row[3] }}</td>
+        <td>{{ row[4] if row[4] else "Still Signed In" }}</td>
+
+        <!-- ✅ NOTE COLUMN -->
+        <td>
+            <form action="/save_note" method="POST">
+                
+                <!-- Hidden ID or mobile -->
+                <input type="hidden" name="mobile" value="{{ row[1] }}">
+
+                <!-- Note box -->
+                <textarea 
+                    name="note" 
+                    class="note-input"
+                    rows="2"
+                    placeholder="Add comment here..."
+                >{{ row[5] if row|length > 5 else "" }}</textarea>
+
+                <br>
+
+                <!-- Save button -->
+                <button type="submit" class="save-btn">
+                    Save
+                </button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/dashboard" class="back-link">⬅ Back to Dashboard</a>
+
+<!-- 🔍 SEARCH SCRIPT -->
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function () {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#reportTable tr");
+
+    rows.forEach((row, index) => {
+        if (index === 0) return; // skip header
+
+        let text = row.innerText.toLowerCase();
+
+        if (text.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+</script>
+
+<!-- AUTO REDIRECT SCRIPT -->
+<script>
+    let timeout;
+
+    function resetTimer() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            window.location.href = "/";
+        }, 30000);
+    }
+
+    function setupActivityTracking() {
+        window.addEventListener("load", resetTimer);
+        document.addEventListener("mousemove", resetTimer);
+        document.addEventListener("keypress", resetTimer);
+        document.addEventListener("click", resetTimer);
+        document.addEventListener("touchstart", resetTimer);
+    }
+
+    setupActivityTracking();
+</script>
+
+</body>
+</html>

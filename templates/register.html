@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f4f4;
+        padding:15px;
+    }
+
+    .container{
+        width:100%;
+        max-width:500px;
+        margin:auto;
+        background:white;
+        padding:20px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1,h2,h3{
+        text-align:center;
+        margin-bottom:20px;
+        color:#333;
+    }
+
+    input,
+    select,
+    textarea,
+    button{
+        width:100%;
+        padding:14px;
+        margin-top:10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:16px;
+    }
+
+    button{
+        background:#800000;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#5e0000;
+    }
+
+    a{
+        text-decoration:none;
+    }
+
+    .card{
+        background:#fafafa;
+        padding:15px;
+        margin-top:15px;
+        border-radius:10px;
+        border:1px solid #ddd;
+    }
+
+    .table-container{
+        overflow-x:auto;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+        min-width:600px;
+    }
+
+    table th,
+    table td{
+        border:1px solid #ccc;
+        padding:10px;
+        text-align:left;
+        font-size:14px;
+    }
+
+    table th{
+        background:#800000;
+        color:white;
+    }
+
+    .footer{
+        margin-top:20px;
+        text-align:center;
+        font-size:13px;
+        color:#555;
+    }
+
+    @media screen and (max-width:600px){
+
+        body{
+            padding:10px;
+        }
+
+        .container{
+            padding:15px;
+        }
+
+        h1{
+            font-size:24px;
+        }
+
+        h2{
+            font-size:20px;
+        }
+
+        input,
+        select,
+        textarea,
+        button{
+            font-size:15px;
+            padding:12px;
+        }
+
+        table th,
+        table td{
+            font-size:12px;
+            padding:8px;
+        }
+    }
+</style>
+
+<title>Register</title>
+
+<style>
+body {
+    margin:0;
+    font-family:Arial;
+    display:flex;
+    height:100vh;
+}
+
+/* LEFT */
+.left {
+    width:50%;
+    background:url("{{ url_for('static', filename='ESEC staffroom.jpg') }}") no-repeat center;
+    background-size:cover;
+}
+
+/* RIGHT */
+.right {
+    width:50%;
+    background:#c62828;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+
+/* LOGO */
+.logo {
+    position:absolute;
+    top:15px;
+    left:15px;
+    width:80px;
+}
+
+/* BOX */
+.box {
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    width:320px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* INPUTS */
+input, select {
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+/* BUTTON */
+button {
+    width:100%;
+    padding:10px;
+    background:#c62828;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover {
+    background:#a61c1c;
+}
+
+/* BACK LINK */
+a {
+    display:block;
+    margin-top:10px;
+    text-decoration:none;
+    color:#c62828;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="left"></div>
+
+<div class="right">
+
+<img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+
+<div class="box">
+
+<h2>Register</h2>
+
+<form method="POST" action="{{ url_for('register') }}">
+
+<input name="name" placeholder="Name" required>
+
+<input type="email" name="email" id="email" placeholder="Email" required>
+
+<input name="mobile" placeholder="Mobile" required>
+
+<label>Role:</label>
+<select name="role" id="role" required>
+    <option value="">Select Role</option>
+    <option value="staff">Staff</option>
+    <option value="Relief Staff">Relief Staff</option>
+    <option value="therapist">Therapist</option>
+    <option value="volunteer">Volunteer</option>
+    <option value="contractor">Contractor</option>
+    <option value="visitor">Visitor</option>
+</select>
+
+<label>Signature:</label>
+<input type="text" name="signature" placeholder="Type your full name" required>
+
+<!-- ✅ FIXED TERMS SECTION -->
+<div style="text-align:left; margin-top:10px;">
+    <label style="display:flex; align-items:flex-start;">
+        <input type="checkbox" name="terms" required style="width:auto; margin-right:8px; margin-top:3px;">
+        <label>
+
+I accept the school <a href="/terms" target="_blank">Terms and Conditions</a>
+</label>
+    </label>
+</div>
+
+<br>
+
+<button type="submit">Register</button>
+
+</form>
+
+<a href="/get-started">⬅ Back</a>
+
+</div>
+
+</div>
+
+<!-- ✅ ADMIN ROLE CONTROL -->
+<script>
+const allowedAdminEmail = "dl.1415.info@schools.sa.edu.au";
+
+const emailInput = document.getElementById("email");
+const roleSelect = document.getElementById("role");
+
+function updateRoleOptions() {
+    const email = emailInput.value.trim().toLowerCase();
+
+    // Remove existing admin option
+    const existing = document.querySelector('option[value="admin"]');
+    if (existing) existing.remove();
+
+    // Add admin ONLY if email matches
+    if (email === allowedAdminEmail) {
+        const option = document.createElement("option");
+        option.value = "admin";
+        option.text = "Admin";
+        roleSelect.appendChild(option);
+    }
+}
+
+emailInput.addEventListener("input", updateRoleOptions);
+</script>
+
+<!-- AUTO REDIRECT SCRIPT (FIXED & RELIABLE) -->
+<script>
+    let timeout;
+
+    function resetTimer() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            window.location.href = "/";
+        }, 30000); // 30 seconds
+    }
+
+    function setupActivityTracking() {
+        window.addEventListener("load", resetTimer);
+        document.addEventListener("mousemove", resetTimer);
+        document.addEventListener("keypress", resetTimer);
+        document.addEventListener("click", resetTimer);
+        document.addEventListener("touchstart", resetTimer);
+    }
+
+    setupActivityTracking();
+</script>
+
+</body>
+</html>

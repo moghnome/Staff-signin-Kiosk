@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f4f4;
+        padding:15px;
+    }
+
+    .container{
+        width:100%;
+        max-width:500px;
+        margin:auto;
+        background:white;
+        padding:20px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1,h2,h3{
+        text-align:center;
+        margin-bottom:20px;
+        color:#333;
+    }
+
+    input,
+    select,
+    textarea,
+    button{
+        width:100%;
+        padding:14px;
+        margin-top:10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:16px;
+    }
+
+    button{
+        background:#800000;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#5e0000;
+    }
+
+    a{
+        text-decoration:none;
+    }
+
+    .card{
+        background:#fafafa;
+        padding:15px;
+        margin-top:15px;
+        border-radius:10px;
+        border:1px solid #ddd;
+    }
+
+    .table-container{
+        overflow-x:auto;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+        min-width:600px;
+    }
+
+    table th,
+    table td{
+        border:1px solid #ccc;
+        padding:10px;
+        text-align:left;
+        font-size:14px;
+    }
+
+    table th{
+        background:#800000;
+        color:white;
+    }
+
+    .footer{
+        margin-top:20px;
+        text-align:center;
+        font-size:13px;
+        color:#555;
+    }
+
+    @media screen and (max-width:600px){
+
+        body{
+            padding:10px;
+        }
+
+        .container{
+            padding:15px;
+        }
+
+        h1{
+            font-size:24px;
+        }
+
+        h2{
+            font-size:20px;
+        }
+
+        input,
+        select,
+        textarea,
+        button{
+            font-size:15px;
+            padding:12px;
+        }
+
+        table th,
+        table td{
+            font-size:12px;
+            padding:8px;
+        }
+    }
+</style>
+
+<title>Dashboard</title>
+
+<style>
+body {
+    margin:0;
+    display:flex;
+    height:100vh;
+    font-family:Arial;
+}
+
+.btn-maroon {
+    background: #660000;
+    color: white;
+}
+
+.btn-maroon:hover {
+    background: #4a0000;
+}
+
+/* LEFT IMAGE */
+.left {
+    width:50%;
+    background:url("{{ url_for('static', filename='ESECjunior-playground.png') }}");
+    background-size:cover;
+}
+
+/* RIGHT SIDE */
+.right {
+    width:50%;
+    background:#c62828;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+
+/* LOGO */
+.logo {
+    position:absolute;
+    top:15px;
+    left:15px;
+    width:80px;
+}
+
+/* CONTENT BOX */
+.box {
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    text-align:center;
+}
+
+/* 🔻 SIGNOUT FORM (NOW BOTTOM LEFT) */
+.signout-container {
+    position:fixed;
+    bottom:20px;
+    left:20px;
+}
+
+.signout-box {
+    background:#e0e0e0;
+    padding:20px;
+    border-radius:10px;
+    width:260px;
+    text-align:center;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+.signout-box input {
+    width:100%;
+    padding:8px;
+    margin:10px 0;
+}
+
+.signout-box button {
+    width:100%;
+    padding:10px;
+    background:#c62828;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+/* 🔻 BUTTONS (NOW BOTTOM CENTER) */
+.bottom-center {
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+.bottom-center button {
+    display:block;
+    margin-top:10px;
+    padding:12px 18px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* BUTTON COLORS */
+.btn-grey {
+    background:grey;
+    color:white;
+}
+
+.btn-red {
+    background:#c62828;
+    color:white;
+}
+
+
+/* PRINT BUTTON (BOTTOM RIGHT) */
+.print-btn{
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    background:grey;
+    color:white;
+    border:none;
+    padding:14px 22px;
+    border-radius:10px;
+    font-size:16px;
+    cursor:pointer;
+    font-weight:bold;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    z-index:999;
+
+}
+
+.print-btn:hover {
+    background:#555;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LEFT -->
+<div class="left"></div>
+
+<!-- RIGHT -->
+<div class="right">
+
+<img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+
+<div class="box">
+    <h2>Welcome to Errington</h2>
+    <h2>{{ name }} 👋</h2>
+
+    <p>Role: <strong>{{ role }}</strong></p>
+
+    <p>Sign-in Date & Time:<br>
+    <strong>{{ signin_time }}</strong></p>
+
+    {% if role == 'admin' %}
+        <a href="/report">View Report</a>
+    {% endif %}
+</div>
+
+
+
+<!-- 🔻 BUTTONS (BOTTOM CENTER) -->
+<div class="bottom-center">
+
+    <a href="/get-started">
+        <button class="btn-maroon">⬅ Go Back</button>
+    </a>
+
+    <a href="/returning">
+        <button class="btn-maroon">➡ Next Visitor</button>
+    </a>
+
+    <a href="/signout">
+        <button class="btn-maroon">➜ Sign Out</button>
+    </a>
+
+</div>
+
+<!-- 🔻 PRINT BUTTON -->
+{% if role.lower() in ['visitor', 'therapist', 'contractor', 'volunteer'] %}
+<a href="/print-label" class="print-btn">
+    🖨 Print Label
+</a>
+{% endif %}
+
+<!-- AUTO TIMEOUT -->
+<script>
+let timeout;
+
+function resetTimer() {
+    clearTimeout(timeout);
+    timeout = setTimeout(function () {
+        window.location.href = "/";
+    }, 30000);
+}
+
+window.onload = resetTimer;
+document.onmousemove = resetTimer;
+document.onkeypress = resetTimer;
+document.onclick = resetTimer;
+document.ontouchstart = resetTimer;
+</script>
+
+</body>
+</html>
