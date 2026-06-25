@@ -270,27 +270,73 @@ def dashboard():
         signin_time=signin_time,
         site=session.get('site')  # optional display
     )
+# ==================================================
+# AUTO SIGN OUT AT 7PM
+# ==================================================
+def auto_signout_expired_users():
 
-# ================= LOGOUT =================
+    now = now_sa()
+
+    today_7pm = now.replace(
+        hour=19,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    if now >= today_7pm:
+
+        active_logs = Log.query.filter_by(
+            sign_out=None
+        ).all()
+
+        for log in active_logs:
+            log.sign_out = now_sa()
+
+        db.session.commit()
+# ==================================================
+# SIGN OUT PAGE
+# ==================================================
+@app.route('/signout')
+def signout_page():
+    return render_template("signout.html")
+
+# ==================================================
+# LOGOUT
+# ==================================================
 @app.route('/logout', methods=['POST'])
 def logout():
 
-    login_id = request.form.get('login_id', '').strip().lower()
+    login_id = request.form.get('login_id')
 
     user = User.query.filter(
         (User.email == login_id) |
         (User.mobile == login_id)
     ).first()
 
-    if user:
-        log = Log.query.filter_by(user_id=user.id, sign_out=None).first()
+    if not user:
+        return "User not found"
 
-        if log:
-            log.sign_out = now_sa()
-            db.session.commit()
+    log = Log.query.filter_by(
+        user_id=user.id,
+        sign_out=None
+    ).first()
+
+    if log:
+        log.sign_out = now_sa()
+        db.session.commit()
 
     session.clear()
+
     return redirect('/next')
+
+# ==================================================
+# TERMS
+# ==================================================
+@app.route('/terms')
+def terms():
+    return render_template("terms.html")
+
 
 # ================= NEXT =================
 @app.route('/next')
