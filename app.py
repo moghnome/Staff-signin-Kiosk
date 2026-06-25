@@ -33,6 +33,41 @@ db = SQLAlchemy(app)
 def now_sa():
     return datetime.utcnow() + timedelta(hours=9, minutes=30)
 
+# ================= SITE LOCATION =================
+SITES = [
+    {
+        "name": "Plympton",
+        "lat": -34.9622,
+        "lon": 138.5485
+    },
+    {
+        "name": "Parafield Gardens",
+        "lat": -34.7926,
+        "lon": 138.6127
+    }
+]
+
+# Allowed distance in metres
+MAX_DISTANCE = 150
+
+# ================= DISTANCE CHECK =================
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371000  # metres
+
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+
+    a = (
+        sin(dlat / 2) ** 2
+        + cos(radians(lat1))
+        * cos(radians(lat2))
+        * sin(dlon / 2) ** 2
+    )
+
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return R * c
+
 # ================= MODELS =================
 class User(db.Model):
     __tablename__ = "users"
@@ -89,8 +124,7 @@ def get_started():
 def returning():
     return render_template("login.html")
 
-
-# ================= LOGIN (FIXED) =================
+# ================= LOGIN (WITH SITE CHECK) =================
 @app.route('/login', methods=['POST'])
 def login():
 
@@ -99,7 +133,38 @@ def login():
     latitude = request.form.get('latitude')
     longitude = request.form.get('longitude')
 
-    # ADMIN LOGIN
+    # ================= GPS VALIDATION =================
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+    except:
+        return render_template("login.html", error="Location access required")
+
+    # ================= CHECK SITE PROXIMITY =================
+    allowed = False
+    used_site = None
+
+    for site in SITES:
+        distance = calculate_distance(
+            latitude,
+            longitude,
+            site["lat"],
+            site["lon"]
+        )
+
+        if distance <= MAX_DISTANCE:
+            allowed = True
+            used_site = site["name"]
+            break
+
+    if not allowed:
+        return f"""
+        <h2>Access Denied</h2>
+        <p>You are not at an approved site.</p>
+        <p>Your distance is too far from all locations.</p>
+        """
+
+    # ================= ADMIN LOGIN =================
     if login_id == ALLOWED_ADMIN_EMAIL:
 
         if pin != ADMIN_PIN:
@@ -108,25 +173,26 @@ def login():
         user = User.query.filter_by(email=ALLOWED_ADMIN_EMAIL).first()
 
     else:
-        # NORMAL USER LOGIN
         user = User.query.filter(
-            (User.email == login_id) | (User.mobile == login_id)
+            (User.email == login_id) |
+            (User.mobile == login_id)
         ).first()
 
     if not user:
         return render_template("login.html", error="User not found")
 
-    # CHECK ACTIVE SESSION
+    # ================= ACTIVE LOGIN CHECK =================
     active_log = Log.query.filter_by(user_id=user.id, sign_out=None).first()
+
     if active_log:
         return render_template("login.html", error="You are already signed in.")
 
-    # SAVE LOGIN
+    # ================= SAVE LOGIN =================
     new_log = Log(
         user_id=user.id,
         sign_in=now_sa(),
-        latitude=float(latitude) if latitude else None,
-        longitude=float(longitude) if longitude else None
+        latitude=latitude,
+        longitude=longitude
     )
 
     db.session.add(new_log)
@@ -134,9 +200,9 @@ def login():
 
     session['user_id'] = user.id
     session['role'] = user.role
+    session['site'] = used_site  # ✅ kept feature
 
     return redirect('/dashboard')
-
 
 # ================= REGISTER =================
 @app.route('/register', methods=['GET', 'POST'])
@@ -178,7 +244,6 @@ def register():
 
     return render_template("register.html")
 
-
 # ================= DASHBOARD =================
 @app.route('/dashboard')
 def dashboard():
@@ -188,30 +253,38 @@ def dashboard():
 
     user = User.query.get(session['user_id'])
 
+    if not user:
+        session.clear()
+        return redirect('/returning')
+
     latest_log = Log.query.filter_by(user_id=user.id).order_by(Log.id.desc()).first()
 
-    signin_time = latest_log.sign_in.strftime("%d/%m/%Y %H:%M") if latest_log else "N/A"
+    signin_time = "N/A"
+    if latest_log and latest_log.sign_in:
+        signin_time = latest_log.sign_in.strftime("%d/%m/%Y %H:%M")
 
     return render_template(
         "dashboard.html",
         name=user.name,
         role=user.role,
-        signin_time=signin_time
+        signin_time=signin_time,
+        site=session.get('site')  # optional display
     )
-
 
 # ================= LOGOUT =================
 @app.route('/logout', methods=['POST'])
 def logout():
 
-    login_id = request.form.get('login_id')
+    login_id = request.form.get('login_id', '').strip().lower()
 
     user = User.query.filter(
-        (User.email == login_id) | (User.mobile == login_id)
+        (User.email == login_id) |
+        (User.mobile == login_id)
     ).first()
 
     if user:
         log = Log.query.filter_by(user_id=user.id, sign_out=None).first()
+
         if log:
             log.sign_out = now_sa()
             db.session.commit()
@@ -219,12 +292,10 @@ def logout():
     session.clear()
     return redirect('/next')
 
-
 # ================= NEXT =================
 @app.route('/next')
 def next_visitor():
     return render_template("next.html")
-
 
 # ================= REPORT =================
 @app.route('/report')
@@ -243,7 +314,6 @@ def report():
     ).join(Log, User.id == Log.user_id).all()
 
     return render_template("report.html", data=data)
-
 
 # ================= CSV EXPORT =================
 @app.route('/export/csv')
@@ -272,7 +342,6 @@ def export_csv():
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=report.csv"}
     )
-
 
 # ================= RUN =================
 if __name__ == '__main__':
