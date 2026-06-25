@@ -233,68 +233,66 @@ def register():
 # ==================================================
 # LOGIN
 # ==================================================
-@app.route('/login', methods=['POST'])
+  @app.route('/login', methods=['POST'])
 def login():
 
     auto_signout_expired_users()
-login_id = request.form.get('login_id', '').strip()
-pin = request.form.get('pin')
 
-latitude = request.form.get('latitude')
-longitude = request.form.get('longitude')
+    login_id = request.form.get('login_id', '').strip()
+    pin = request.form.get('pin')
 
-# ==================================================
-# CHECK LOCATION ACCESS
-# ==================================================
-if not latitude or not longitude:
-    return render_template(
-        "login.html",
-        error="Please allow location access before signing in."
-    )
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
 
-# ==================================================
-# VALIDATE GPS VALUES
-# ==================================================
-try:
-    latitude = float(latitude)
-    longitude = float(longitude)
+    # ==================================================
+    # CHECK LOCATION ACCESS
+    # ==================================================
+    if not latitude or not longitude:
+        return render_template(
+            "login.html",
+            error="Please allow location access before signing in."
+        )
 
-except ValueError:
-    return render_template(
-        "login.html",
-        error="Invalid GPS location received."
-    )
+    # ==================================================
+    # VALIDATE GPS VALUES
+    # ==================================================
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
 
-# ==================================================
-# CHECK DISTANCE AGAINST ALL SITES
-# ==================================================
-allowed = False
+    except ValueError:
+        return render_template(
+            "login.html",
+            error="Invalid GPS location received."
+        )
 
-for site in SITES:
+    # ==================================================
+    # CHECK DISTANCE
+    # ==================================================
+    allowed = False
 
-    distance = calculate_distance(
-        latitude,
-        longitude,
-        site["lat"],
-        site["lon"]
-    )
+    for site in SITES:
 
-    if distance <= MAX_DISTANCE:
-        allowed = True
-        break
+        distance = calculate_distance(
+            latitude,
+            longitude,
+            site["lat"],
+            site["lon"]
+        )
 
-# ==================================================
-# BLOCK OFFSITE USERS
-# ==================================================
-if not allowed:
+        if distance <= MAX_DISTANCE:
+            allowed = True
+            break
 
-    return render_template(
-        "login.html",
-        error=f"You must be onsite to sign in. Current distance: {int(distance)} metres."
-    )
-   
+    if not allowed:
+        return render_template(
+            "login.html",
+            error=f"You must be onsite to sign in. Distance: {int(distance)} metres."
+        )
 
+    # ==================================================
     # ADMIN LOGIN
+    # ==================================================
     if login_id.lower() == ALLOWED_ADMIN_EMAIL:
 
         if pin != ADMIN_PIN:
@@ -320,7 +318,9 @@ if not allowed:
             error="User not found"
         )
 
+    # ==================================================
     # CHECK ACTIVE LOGIN
+    # ==================================================
     active_log = Log.query.filter_by(
         user_id=user.id,
         sign_out=None
@@ -332,7 +332,9 @@ if not allowed:
             error="You are already signed in."
         )
 
+    # ==================================================
     # SAVE LOGIN
+    # ==================================================
     new_log = Log(
         user_id=user.id,
         sign_in=now_sa(),
@@ -347,7 +349,6 @@ if not allowed:
     session['role'] = user.role
 
     return redirect('/dashboard')
-
 # ==================================================
 # DASHBOARD
 # ==================================================
