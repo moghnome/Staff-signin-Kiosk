@@ -1,251 +1,263 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
-<title>Login</title>
+    <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
 
-<style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
+    <style>
 
-body{
-    font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    display:flex;
-    height:100vh;
-}
+        *{
+            box-sizing:border-box;
+            margin:0;
+            padding:0;
+        }
 
-/* LEFT SIDE */
-.left{
-    width:50%;
-    background:url("{{ url_for('static', filename='ESEC images.jpg') }}") no-repeat center;
-    background-size:cover;
-}
+        body{
+            font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            display:flex;
+            height:100vh;
+        }
 
-/* RIGHT SIDE */
-.right{
-    width:50%;
-    background:linear-gradient(135deg, #c62828, #e53935);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    position:relative;
-}
+        /* LEFT SIDE */
+        .left{
+            width:50%;
+            background:url("{{ url_for('static', filename='ESEC_images.jpg') }}") no-repeat center;
+            background-size:cover;
+        }
 
-/* LOGO */
-.logo{
-    position:absolute;
-    top:20px;
-    left:20px;
-    width:90px;
-}
+        /* RIGHT SIDE */
+        .right{
+            width:50%;
+            background:linear-gradient(135deg, #c62828, #e53935);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            position:relative;
+        }
 
-/* LOGIN BOX */
-.box{
-    background:white;
-    padding:40px 30px;
-    border-radius:12px;
-    text-align:center;
-    width:320px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.2);
-}
+        /* LOGO */
+        .logo{
+            position:absolute;
+            top:20px;
+            left:20px;
+            width:90px;
+        }
 
-h2{
-    margin-bottom:15px;
-    color:#333;
-}
+        /* LOGIN BOX */
+        .box{
+            background:white;
+            padding:40px 30px;
+            border-radius:12px;
+            text-align:center;
+            width:320px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.2);
+        }
 
-.error{
-    color:red;
-    font-weight:bold;
-    margin-bottom:10px;
-}
+        h2{
+            margin-bottom:15px;
+            color:#333;
+        }
 
-input{
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border:1px solid #ccc;
-    border-radius:6px;
-    font-size:15px;
-}
+        .error{
+            color:red;
+            font-weight:bold;
+            margin-bottom:10px;
+        }
 
-button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    background:#c62828;
-    color:white;
-    border:none;
-    border-radius:6px;
-    font-size:15px;
-    cursor:pointer;
-}
+        input{
+            width:100%;
+            padding:12px;
+            margin:10px 0;
+            border:1px solid #ccc;
+            border-radius:6px;
+            font-size:15px;
+        }
 
-button:hover{
-    background:#a61c1c;
-}
+        button{
+            width:100%;
+            padding:12px;
+            margin-top:10px;
+            background:#c62828;
+            color:white;
+            border:none;
+            border-radius:6px;
+            font-size:15px;
+            cursor:pointer;
+        }
 
-a{
-    display:block;
-    margin-top:15px;
-    color:#c62828;
-    text-decoration:none;
-}
+        button:hover{
+            background:#a61c1c;
+        }
 
-@media (max-width:768px){
+        a{
+            display:block;
+            margin-top:15px;
+            color:#c62828;
+            text-decoration:none;
+        }
 
-    .left{
-        display:none;
-    }
+        @media (max-width:768px){
 
-    .right{
-        width:100%;
-    }
+            .left{
+                display:none;
+            }
 
-    .box{
-        width:90%;
-    }
-}
+            .right{
+                width:100%;
+            }
 
-</style>
+            .box{
+                width:90%;
+            }
+        }
+
+    </style>
 
 </head>
 
 <body>
 
-<div class="left"></div>
+    <div class="left"></div>
 
-<div class="right">
+    <div class="right">
 
-<img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+        <img
+            src="{{ url_for('static', filename='logo.png') }}"
+            class="logo"
+            alt="Logo"
+        >
 
-<div class="box">
+        <div class="box">
 
-<h2>Welcome Back</h2>
+            <h2>Welcome Back</h2>
 
-<!-- ERROR -->
-{% if error %}
-<div class="error">
-    {{ error }}
-</div>
-{% endif %}
+            <!-- ERROR -->
+            {% if error %}
+                <div class="error">
+                    {{ error }}
+                </div>
+            {% endif %}
 
-<!-- LOGIN FORM -->
-<form method="POST" action="{{ url_for('login') }}">
+            <!-- LOGIN FORM -->
+            <form method="POST" action="{{ url_for('login') }}">
 
-    <input
-        type="text"
-        id="login_id"
-        name="login_id"
-        placeholder="Email or Mobile"
-        required
-    >
+                <input
+                    type="text"
+                    id="login_id"
+                    name="login_id"
+                    placeholder="Email or Mobile"
+                    required
+                >
 
-    <!-- ADMIN PIN -->
-    <input
-        type="password"
-        id="pin"
-        name="pin"
-        placeholder="Enter Admin PIN"
-        style="display:none;"
-    >
+                <!-- ADMIN PIN -->
+                <input
+                    type="password"
+                    id="pin"
+                    name="pin"
+                    placeholder="Enter Admin PIN"
+                    style="display:none;"
+                >
 
-    <!-- GPS -->
-    <input type="hidden" name="latitude" id="latitude">
-    <input type="hidden" name="longitude" id="longitude">
+                <!-- GPS -->
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
 
-    <button type="submit">
-        Sign In
-    </button>
+                <button type="submit">
+                    Sign In
+                </button>
 
-</form>
+            </form>
 
-<a href="/get-started">← Back</a>
+            <a href="/get-started">
+                ← Back
+            </a>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-<!-- ADMIN PIN SCRIPT -->
-<script>
+    <!-- ADMIN PIN SCRIPT -->
+    <script>
 
-const adminEmail = "dl.1415.info@schools.sa.edu.au";
+        const adminEmail = "dl.1415.info@schools.sa.edu.au";
 
-const loginInput = document.getElementById("login_id");
-const pinInput = document.getElementById("pin");
+        const loginInput = document.getElementById("login_id");
+        const pinInput = document.getElementById("pin");
 
-loginInput.addEventListener("input", function () {
+        loginInput.addEventListener("input", function () {
 
-    if (loginInput.value.trim().toLowerCase() === adminEmail) {
+            if (loginInput.value.trim().toLowerCase() === adminEmail) {
 
-        pinInput.style.display = "block";
-        pinInput.required = true;
+                pinInput.style.display = "block";
+                pinInput.required = true;
 
-    } else {
+            } else {
 
-        pinInput.style.display = "none";
-        pinInput.required = false;
-        pinInput.value = "";
-    }
+                pinInput.style.display = "none";
+                pinInput.required = false;
+                pinInput.value = "";
+            }
 
-});
+        });
 
-</script>
+    </script>
 
-<!-- GEOLOCATION -->
-<script>
+    <!-- GEOLOCATION -->
+    <script>
 
-navigator.geolocation.getCurrentPosition(
+        if (navigator.geolocation) {
 
-    function(position){
+            navigator.geolocation.getCurrentPosition(
 
-        document.getElementById("latitude").value =
-            position.coords.latitude;
+                function(position){
 
-        document.getElementById("longitude").value =
-            position.coords.longitude;
-    },
+                    document.getElementById("latitude").value =
+                        position.coords.latitude;
 
-    function(error){
+                    document.getElementById("longitude").value =
+                        position.coords.longitude;
+                },
 
-        alert("Please allow location access before signing in.");
-    }
+                function(error){
 
-);
+                    console.log("Location access denied.");
+                }
 
-</script>
+            );
+        }
 
-<!-- AUTO REDIRECT -->
-<script>
+    </script>
 
-let timeout;
+    <!-- AUTO REDIRECT -->
+    <script>
 
-function resetTimer(){
+        let timeout;
 
-    clearTimeout(timeout);
+        function resetTimer(){
 
-    timeout = setTimeout(function(){
+            clearTimeout(timeout);
 
-        window.location.href = "/";
+            timeout = setTimeout(function(){
 
-    }, 30000);
+                window.location.href = "/";
 
-}
+            }, 30000);
 
-window.addEventListener("load", resetTimer);
-document.addEventListener("mousemove", resetTimer);
-document.addEventListener("keypress", resetTimer);
-document.addEventListener("click", resetTimer);
-document.addEventListener("touchstart", resetTimer);
+        }
 
-</script>
+        window.addEventListener("load", resetTimer);
+        document.addEventListener("mousemove", resetTimer);
+        document.addEventListener("keypress", resetTimer);
+        document.addEventListener("click", resetTimer);
+        document.addEventListener("touchstart", resetTimer);
+
+    </script>
 
 </body>
+
 </html>
