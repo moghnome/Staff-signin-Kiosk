@@ -8,64 +8,32 @@ import os
 
 app = Flask(__name__)
 
-# ==================================================
-# SECRET KEY
-# ==================================================
+# ================= SECRET =================
 app.secret_key = "secret123#1415ESEC"
 
-# ==================================================
-# ADMIN CONFIG
-# ==================================================
+# ================= ADMIN =================
 ALLOWED_ADMIN_EMAIL = "dl.1415.info@schools.sa.edu.au"
 ADMIN_PIN = "admin123#1415ESEC"
 
-# ==================================================
-# DATABASE CONFIG
-# ==================================================
+# ================= DATABASE =================
 database_url = os.environ.get("DATABASE_URL")
 
 if not database_url:
     database_url = "sqlite:///database.db"
 
 if database_url.startswith("postgres://"):
-    database_url = database_url.replace(
-        "postgres://",
-        "postgresql://",
-        1
-    )
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-# ==================================================
-# ADELAIDE TIME
-# ==================================================
+
+# ================= TIME =================
 def now_sa():
     return datetime.utcnow() + timedelta(hours=9, minutes=30)
 
-# ==================================================
-# ALLOWED SITE LOCATIONS
-# ==================================================
-
-SITES = [
-    {
-        "name": "Parafield Gardens",
-        "lat": -34.7926,
-        "lon": 138.6127
-    },
-    {
-        "name": "Plympton",
-        "lat": -34.9622,
-        "lon": 138.5485
-    }
-]
-# Allowed distance in metres
-MAX_DISTANCE = 150
-
-# ==================================================
-# DATABASE MODELS
-# ==================================================
+# ================= MODELS =================
 class User(db.Model):
     __tablename__ = "users"
 
@@ -83,110 +51,94 @@ class Log(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
-
     sign_in = db.Column(db.DateTime)
     sign_out = db.Column(db.DateTime, nullable=True)
-
     note = db.Column(db.Text)
-
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
-# ==================================================
-# CREATE TABLES
-# ==================================================
+# ================= CREATE DB =================
 with app.app_context():
-
     db.create_all()
 
-    admin = User.query.filter_by(
-        email=ALLOWED_ADMIN_EMAIL
-    ).first()
-
+    admin = User.query.filter_by(email=ALLOWED_ADMIN_EMAIL).first()
     if not admin:
-
-        admin_user = User(
+        db.session.add(User(
             name="Admin",
             email=ALLOWED_ADMIN_EMAIL,
             mobile="0000000000",
             role="admin",
             signature="Admin",
             accepted_terms=True
-        )
-
-        db.session.add(admin_user)
+        ))
         db.session.commit()
 
-# ==================================================
-# DISTANCE CALCULATION
-# ==================================================
-def calculate_distance(lat1, lon1, lat2, lon2):
+# ================= ROUTES =================
 
-    R = 6371000
-
-    dlat = radians(lat2 - lat1)
-    dlon = radians(lon2 - lon1)
-
-    a = (
-        sin(dlat / 2) ** 2
-        + cos(radians(lat1))
-        * cos(radians(lat2))
-        * sin(dlon / 2) ** 2
-    )
-
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    return R * c
-
-# ==================================================
-# AUTO SIGN OUT
-# ==================================================
-def auto_signout_expired_users():
-
-    now = now_sa()
-
-    today_7pm = now.replace(
-        hour=19,
-        minute=0,
-        second=0,
-        microsecond=0
-    )
-
-    if now >= today_7pm:
-
-        active_logs = Log.query.filter_by(
-            sign_out=None
-        ).all()
-
-        for log in active_logs:
-            log.sign_out = now_sa()
-
-        db.session.commit()
-
-# ==================================================
-# HOME
-# ==================================================
 @app.route('/')
 def home():
     return render_template("index.html")
 
-# ==================================================
-# GET STARTED
-# ==================================================
+
 @app.route('/get-started')
 def get_started():
     return render_template("get_started.html")
 
-# ==================================================
-# LOGIN PAGE
-# ==================================================
+
 @app.route('/returning')
 def returning():
     return render_template("login.html")
 
-# ==================================================
-# REGISTER
-# ==================================================
+
+# ================= LOGIN (FIXED) =================
+@app.route('/login', methods=['POST'])
+def login():
+
+    login_id = request.form.get('login_id', '').lower().strip()
+    pin = request.form.get('pin')
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+
+    # ADMIN LOGIN
+    if login_id == ALLOWED_ADMIN_EMAIL:
+
+        if pin != ADMIN_PIN:
+            return render_template("login.html", error="Invalid admin PIN")
+
+        user = User.query.filter_by(email=ALLOWED_ADMIN_EMAIL).first()
+
+    else:
+        # NORMAL USER LOGIN
+        user = User.query.filter(
+            (User.email == login_id) | (User.mobile == login_id)
+        ).first()
+
+    if not user:
+        return render_template("login.html", error="User not found")
+
+    # CHECK ACTIVE SESSION
+    active_log = Log.query.filter_by(user_id=user.id, sign_out=None).first()
+    if active_log:
+        return render_template("login.html", error="You are already signed in.")
+
+    # SAVE LOGIN
+    new_log = Log(
+        user_id=user.id,
+        sign_in=now_sa(),
+        latitude=float(latitude) if latitude else None,
+        longitude=float(longitude) if longitude else None
+    )
+
+    db.session.add(new_log)
+    db.session.commit()
+
+    session['user_id'] = user.id
+    session['role'] = user.role
+
+    return redirect('/dashboard')
+
+
+# ================= REGISTER =================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 
@@ -197,7 +149,6 @@ def register():
         mobile = request.form['mobile']
         role = request.form['role'].lower().strip()
         signature = request.form['signature']
-
         accepted_terms = request.form.get('terms')
 
         if not accepted_terms:
@@ -207,91 +158,28 @@ def register():
             return "Not allowed to register as admin"
 
         existing_user = User.query.filter(
-            (User.email == email) |
-            (User.mobile == mobile)
+            (User.email == email) | (User.mobile == mobile)
         ).first()
 
         if existing_user:
             return "User already exists"
 
-        new_user = User(
+        db.session.add(User(
             name=name,
             email=email,
             mobile=mobile,
             role=role,
             signature=signature,
             accepted_terms=True
-        )
-
-        db.session.add(new_user)
+        ))
         db.session.commit()
 
         return redirect('/returning')
 
     return render_template("register.html")
 
-    # ==================================================
-    # ADMIN LOGIN
-    # ==================================================
-    if login_id.lower() == ALLOWED_ADMIN_EMAIL:
 
-        if pin != ADMIN_PIN:
-            return render_template(
-                "login.html",
-                error="Invalid admin PIN"
-            )
-
-        user = User.query.filter_by(
-            email=ALLOWED_ADMIN_EMAIL
-        ).first()
-
-    else:
-
-        user = User.query.filter(
-            (User.email == login_id) |
-            (User.mobile == login_id)
-        ).first()
-
-    if not user:
-        return render_template(
-            "login.html",
-            error="User not found"
-        )
-
-    # ==================================================
-    # CHECK ACTIVE LOGIN
-    # ==================================================
-    active_log = Log.query.filter_by(
-        user_id=user.id,
-        sign_out=None
-    ).first()
-
-    if active_log:
-        return render_template(
-            "login.html",
-            error="You are already signed in."
-        )
-
-    # ==================================================
-    # SAVE LOGIN
-    # ==================================================
-    new_log = Log(
-        user_id=user.id,
-        sign_in=now_sa(),
-        latitude=latitude,
-        longitude=longitude
-    )
-
-    db.session.add(new_log)
-    db.session.commit()
-
-    session['user_id'] = user.id
-    session['role'] = user.role
-
-    return redirect('/dashboard')
-# ==================================================
-# DASHBOARD
-# ==================================================
+# ================= DASHBOARD =================
 @app.route('/dashboard')
 def dashboard():
 
@@ -300,16 +188,9 @@ def dashboard():
 
     user = User.query.get(session['user_id'])
 
-    latest_log = Log.query.filter_by(
-        user_id=user.id
-    ).order_by(Log.id.desc()).first()
+    latest_log = Log.query.filter_by(user_id=user.id).order_by(Log.id.desc()).first()
 
-    signin_time = "N/A"
-
-    if latest_log:
-        signin_time = latest_log.sign_in.strftime(
-            "%d/%m/%Y %H:%M"
-        )
+    signin_time = latest_log.sign_in.strftime("%d/%m/%Y %H:%M") if latest_log else "N/A"
 
     return render_template(
         "dashboard.html",
@@ -318,88 +199,34 @@ def dashboard():
         signin_time=signin_time
     )
 
-# ==================================================
-# SIGN OUT PAGE
-# ==================================================
-@app.route('/signout')
-def signout_page():
-    return render_template("signout.html")
 
-# ==================================================
-# LOGOUT
-# ==================================================
+# ================= LOGOUT =================
 @app.route('/logout', methods=['POST'])
 def logout():
 
     login_id = request.form.get('login_id')
 
     user = User.query.filter(
-        (User.email == login_id) |
-        (User.mobile == login_id)
+        (User.email == login_id) | (User.mobile == login_id)
     ).first()
 
-    if not user:
-        return "User not found"
-
-    log = Log.query.filter_by(
-        user_id=user.id,
-        sign_out=None
-    ).first()
-
-    if log:
-        log.sign_out = now_sa()
-        db.session.commit()
+    if user:
+        log = Log.query.filter_by(user_id=user.id, sign_out=None).first()
+        if log:
+            log.sign_out = now_sa()
+            db.session.commit()
 
     session.clear()
-
     return redirect('/next')
 
-# ==================================================
-# TERMS
-# ==================================================
-@app.route('/terms')
-def terms():
-    return render_template("terms.html")
 
-# ==================================================
-# NEXT
-# ==================================================
+# ================= NEXT =================
 @app.route('/next')
 def next_visitor():
     return render_template("next.html")
 
-# ==================================================
-# SAVE NOTE
-# ==================================================
-@app.route('/save_note', methods=['POST'])
-def save_note():
 
-    if session.get('role') != 'admin':
-        return "Access denied"
-
-    mobile = request.form.get('mobile')
-    note = request.form.get('note')
-
-    user = User.query.filter_by(
-        mobile=mobile
-    ).first()
-
-    if not user:
-        return "User not found"
-
-    latest_log = Log.query.filter_by(
-        user_id=user.id
-    ).order_by(Log.id.desc()).first()
-
-    if latest_log:
-        latest_log.note = note
-        db.session.commit()
-
-    return redirect('/report')
-
-# ==================================================
-# REPORT
-# ==================================================
+# ================= REPORT =================
 @app.route('/report')
 def report():
 
@@ -413,19 +240,12 @@ def report():
         Log.sign_in,
         Log.sign_out,
         Log.note
-    ).join(
-        Log,
-        User.id == Log.user_id
-    ).all()
+    ).join(Log, User.id == Log.user_id).all()
 
-    return render_template(
-        "report.html",
-        data=data
-    )
+    return render_template("report.html", data=data)
 
-# ==================================================
-# EXPORT CSV
-# ==================================================
+
+# ================= CSV EXPORT =================
 @app.route('/export/csv')
 def export_csv():
 
@@ -439,70 +259,21 @@ def export_csv():
         Log.sign_in,
         Log.sign_out,
         Log.note
-    ).join(
-        Log,
-        User.id == Log.user_id
-    ).all()
+    ).join(Log, User.id == Log.user_id).all()
 
     si = StringIO()
-
     writer = csv.writer(si)
 
-    writer.writerow([
-        "Name",
-        "Mobile",
-        "Role",
-        "Sign In",
-        "Sign Out",
-        "Note"
-    ])
-
-    for row in rows:
-        writer.writerow(row)
+    writer.writerow(["Name", "Mobile", "Role", "Sign In", "Sign Out", "Note"])
+    writer.writerows(rows)
 
     return Response(
         si.getvalue(),
         mimetype="text/csv",
-        headers={
-            "Content-Disposition":
-            "attachment; filename=report.csv"
-        }
+        headers={"Content-Disposition": "attachment; filename=report.csv"}
     )
 
-# ==================================================
-# PRINT LABEL
-# ==================================================
-@app.route('/print-label')
-def print_label():
 
-    if 'user_id' not in session:
-        return redirect('/returning')
-
-    user = User.query.get(session['user_id'])
-
-    latest_log = Log.query.filter_by(
-        user_id=user.id
-    ).order_by(Log.id.desc()).first()
-
-    signin_time = "N/A"
-
-    if latest_log:
-        signin_time = latest_log.sign_in.strftime(
-            "%d/%m/%Y %H:%M"
-        )
-
-    return render_template(
-        "label.html",
-        name=user.name,
-        role=user.role,
-        signin_time=signin_time
-    )
-
-# ==================================================
-# RUN APP
-# ==================================================
+# ================= RUN =================
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
