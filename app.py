@@ -230,66 +230,6 @@ def register():
 
     return render_template("register.html")
 
-# ==================================================
-# LOGIN
-# ==================================================
-  @app.route('/login', methods=['POST'])
-def login():
-
-    auto_signout_expired_users()
-
-    login_id = request.form.get('login_id', '').strip()
-    pin = request.form.get('pin')
-
-    latitude = request.form.get('latitude')
-    longitude = request.form.get('longitude')
-
-    # ==================================================
-    # CHECK LOCATION ACCESS
-    # ==================================================
-    if not latitude or not longitude:
-        return render_template(
-            "login.html",
-            error="Please allow location access before signing in."
-        )
-
-    # ==================================================
-    # VALIDATE GPS VALUES
-    # ==================================================
-    try:
-        latitude = float(latitude)
-        longitude = float(longitude)
-
-    except ValueError:
-        return render_template(
-            "login.html",
-            error="Invalid GPS location received."
-        )
-
-    # ==================================================
-    # CHECK DISTANCE
-    # ==================================================
-    allowed = False
-
-    for site in SITES:
-
-        distance = calculate_distance(
-            latitude,
-            longitude,
-            site["lat"],
-            site["lon"]
-        )
-
-        if distance <= MAX_DISTANCE:
-            allowed = True
-            break
-
-    if not allowed:
-        return render_template(
-            "login.html",
-            error=f"You must be onsite to sign in. Distance: {int(distance)} metres."
-        )
-
     # ==================================================
     # ADMIN LOGIN
     # ==================================================
