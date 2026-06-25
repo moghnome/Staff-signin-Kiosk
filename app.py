@@ -525,19 +525,5 @@ def print_label():
 if __name__ == '__main__':
     app.run(debug=True)
 
-Also add this inside your login.html form:
 
-<input type="hidden" name="latitude" id="latitude">
-<input type="hidden" name="longitude" id="longitude">
 
-<script>
-navigator.geolocation.getCurrentPosition(function(position) {
-
-    document.getElementById("latitude").value =
-        position.coords.latitude;
-
-    document.getElementById("longitude").value =
-        position.coords.longitude;
-
-});
-</script>
