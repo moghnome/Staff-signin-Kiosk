@@ -342,6 +342,34 @@ def terms():
 @app.route('/next')
 def next_visitor():
     return render_template("next.html")
+# ==================================================
+# SAVE NOTE
+# ==================================================
+@app.route('/save_note', methods=['POST'])
+def save_note():
+
+    if session.get('role') != 'admin':
+        return "Access denied"
+
+    mobile = request.form.get('mobile')
+    note = request.form.get('note')
+
+    user = User.query.filter_by(
+        mobile=mobile
+    ).first()
+
+    if not user:
+        return "User not found"
+
+    latest_log = Log.query.filter_by(
+        user_id=user.id
+    ).order_by(Log.id.desc()).first()
+
+    if latest_log:
+        latest_log.note = note
+        db.session.commit()
+
+    return redirect('/report')
 
 # ================= REPORT =================
 @app.route('/report')
