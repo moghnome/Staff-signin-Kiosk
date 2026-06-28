@@ -7,49 +7,165 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
 body{
     font-family:"Segoe UI";
     display:flex;
-    height:100vh;
+    min-height:100vh;
+    overflow-x:hidden;
 }
 
+/* LEFT SIDE */
 .left{
     width:50%;
-    background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center/cover;
+    background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
+    background-size:cover;
 }
 
+/* RIGHT SIDE */
 .right{
     width:50%;
     background:linear-gradient(135deg,#c62828,#e53935);
     display:flex;
     justify-content:center;
     align-items:center;
+    position:relative;
+    padding:20px;
 }
 
+/* LOGO */
+.logo{
+    position:absolute;
+    top:20px;
+    left:20px;
+    width:80px;
+    z-index:2;
+}
+
+/* LOGIN BOX */
 .box{
     background:#fff;
     padding:40px;
     border-radius:10px;
-    width:320px;
+    width:100%;
+    max-width:320px;
     text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
 
-input,button{
+/* HEADING */
+h2{
+    margin-bottom:15px;
+}
+
+/* INPUTS */
+input,
+button{
     width:100%;
     padding:12px;
     margin-top:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:16px;
 }
 
+/* BUTTON */
 button{
     background:#c62828;
     color:white;
     border:none;
+    cursor:pointer;
 }
 
-.error{color:red;margin-bottom:10px;}
-.logo{position:absolute;top:20px;left:20px;width:80px;}
+button:hover{
+    background:#a61c1c;
+}
+
+/* ERROR */
+.error{
+    color:red;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+/* LINK */
+a{
+    display:inline-block;
+    margin-top:15px;
+    color:#c62828;
+    text-decoration:none;
+}
+
+/* ================= TABLET ================= */
+@media (max-width: 900px){
+
+    body{
+        flex-direction:column;
+    }
+
+    /* KEEP BACKGROUND IMAGE */
+    .left{
+        width:100%;
+        height:35vh;
+        display:block;
+        background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
+        background-size:cover;
+    }
+
+    .right{
+        width:100%;
+        min-height:65vh;
+        padding:90px 20px 30px;
+    }
+
+    .box{
+        max-width:420px;
+        width:100%;
+    }
+
+    .logo{
+        width:70px;
+        top:15px;
+        left:15px;
+    }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 480px){
+
+    .left{
+        height:30vh;
+    }
+
+    .right{
+        padding:80px 15px 25px;
+    }
+
+    .box{
+        padding:30px 20px;
+    }
+
+    h2{
+        font-size:24px;
+    }
+
+    input,
+    button{
+        font-size:15px;
+        padding:13px;
+    }
+
+    .logo{
+        width:60px;
+    }
+}
+
 </style>
 </head>
 
@@ -59,53 +175,90 @@ button{
 
 <div class="right">
 
-<img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+<img
+    src="{{ url_for('static', filename='logo.png') }}"
+    class="logo"
+    alt="Logo"
+>
 
 <div class="box">
 
 <h2>Login</h2>
 
 {% if error %}
-<div class="error">{{ error }}</div>
+<div class="error">
+    {{ error }}
+</div>
 {% endif %}
 
 <form method="POST" action="/login">
 
-<input type="text" name="login_id" id="login_id" placeholder="Email or Mobile" required>
+<input
+    type="text"
+    name="login_id"
+    id="login_id"
+    placeholder="Email or Mobile"
+    required
+>
 
-<input type="password" name="pin" id="pin" placeholder="Admin PIN" style="display:none;">
+<input
+    type="password"
+    name="pin"
+    id="pin"
+    placeholder="Admin PIN"
+    style="display:none;"
+>
 
 <input type="hidden" name="latitude" id="latitude">
 <input type="hidden" name="longitude" id="longitude">
 
-<button type="submit">Sign In</button>
+<button type="submit">
+    Sign In
+</button>
 
 </form>
 
-<a href="/get-started">Back</a>
+<a href="/get-started">
+    Back
+</a>
 
 </div>
 </div>
 
 <script>
+
 const adminEmail = "dl.1415.info@schools.sa.edu.au";
 
 document.getElementById("login_id").addEventListener("input", function(){
+
     let pin = document.getElementById("pin");
+
     if(this.value.toLowerCase() === adminEmail){
+
         pin.style.display = "block";
+
     } else {
+
         pin.style.display = "none";
         pin.value = "";
     }
 });
 
-navigator.geolocation.getCurrentPosition(function(pos){
-    document.getElementById("latitude").value = pos.coords.latitude;
-    document.getElementById("longitude").value = pos.coords.longitude;
-});
+
+// GPS
+if (navigator.geolocation) {
+
+    navigator.geolocation.getCurrentPosition(function(pos){
+
+        document.getElementById("latitude").value =
+            pos.coords.latitude;
+
+        document.getElementById("longitude").value =
+            pos.coords.longitude;
+    });
+}
+
 </script>
 
 </body>
-</html>
 </html>
