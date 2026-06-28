@@ -1,136 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8">
+<title>Login</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-    }
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display:flex;
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* LEFT SIDE */
+.left{
+    width:50%;
+    background:url("{{ url_for('static', filename='ESEC images.jpg') }}") no-repeat center;
+    background-size:cover;
+}
+
+/* RIGHT SIDE */
+.right{
+    width:50%;
+    background:linear-gradient(135deg,#c62828,#e53935);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    padding:20px;
+}
+
+/* LOGO */
+.logo{
+    position:absolute;
+    top:20px;
+    left:20px;
+    width:90px;
+    max-width:25vw;
+}
+
+/* LOGIN BOX */
+.box{
+    background:white;
+    padding:40px 30px;
+    border-radius:12px;
+    width:100%;
+    max-width:320px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2{
+    margin-bottom:15px;
+    color:#333;
+}
+
+/* INPUTS */
+input,
+button{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+
+/* BUTTON */
+button{
+    background:#c62828;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#a61c1c;
+}
+
+/* ERROR */
+.error{
+    color:red;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+/* LINK */
+a{
+    display:inline-block;
+    margin-top:10px;
+    text-decoration:none;
+    color:#c62828;
+    font-weight:500;
+}
+
+/* ================= MOBILE + TABLET ================= */
+@media (max-width: 900px){
 
     body{
-        font-family: Arial, sans-serif;
-        background:#f4f4f4;
-        padding:15px;
+        flex-direction:column;
     }
 
-    .container{
+    .left{
+        display:none;
+    }
+
+    .right{
         width:100%;
-        max-width:500px;
-        margin:auto;
-        background:white;
-        padding:20px;
-        border-radius:12px;
-        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+        min-height:100vh;
+        padding:90px 20px 30px;
     }
 
-    h1,h2,h3{
-        text-align:center;
-        margin-bottom:20px;
-        color:#333;
+    .logo{
+        width:70px;
+        top:15px;
+        left:15px;
+    }
+
+    .box{
+        width:100%;
+        max-width:420px;
+        padding:35px 25px;
+    }
+
+    h2{
+        font-size:28px;
     }
 
     input,
-    select,
-    textarea,
     button{
-        width:100%;
-        padding:14px;
-        margin-top:10px;
-        border-radius:8px;
-        border:1px solid #ccc;
         font-size:16px;
+        padding:14px;
+    }
+}
+
+/* EXTRA SMALL DEVICES */
+@media (max-width: 480px){
+
+    .box{
+        padding:28px 20px;
     }
 
+    h2{
+        font-size:24px;
+    }
+
+    input,
     button{
-        background:#800000;
-        color:white;
-        border:none;
-        cursor:pointer;
-        font-weight:bold;
+        font-size:15px;
     }
+}
 
-    button:hover{
-        background:#5e0000;
-    }
-
-    a{
-        text-decoration:none;
-    }
-
-    .card{
-        background:#fafafa;
-        padding:15px;
-        margin-top:15px;
-        border-radius:10px;
-        border:1px solid #ddd;
-    }
-
-    .table-container{
-        overflow-x:auto;
-    }
-
-    table{
-        width:100%;
-        border-collapse:collapse;
-        margin-top:15px;
-        min-width:600px;
-    }
-
-    table th,
-    table td{
-        border:1px solid #ccc;
-        padding:10px;
-        text-align:left;
-        font-size:14px;
-    }
-
-    table th{
-        background:#800000;
-        color:white;
-    }
-
-    .footer{
-        margin-top:20px;
-        text-align:center;
-        font-size:13px;
-        color:#555;
-    }
-
-    @media screen and (max-width:600px){
-
-        body{
-            padding:10px;
-        }
-
-        .container{
-            padding:15px;
-        }
-
-        h1{
-            font-size:24px;
-        }
-
-        h2{
-            font-size:20px;
-        }
-
-        input,
-        select,
-        textarea,
-        button{
-            font-size:15px;
-            padding:12px;
-        }
-
-        table th,
-        table td{
-            font-size:12px;
-            padding:8px;
-        }
-    }
 </style>
 
 </head>
@@ -141,37 +172,60 @@
 
 <div class="right">
 
-<img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+<img
+    src="{{ url_for('static', filename='logo.png') }}"
+    class="logo"
+    alt="Logo"
+>
 
 <div class="box">
 
 <h2>Welcome Back</h2>
 
 {% if error %}
-<div class="error">{{ error }}</div>
+<div class="error">
+    {{ error }}
+</div>
 {% endif %}
 
 <form method="POST" action="/login">
 
-<input type="text" name="login_id" id="login_id" placeholder="Email or Mobile" required>
+<input
+    type="text"
+    name="login_id"
+    id="login_id"
+    placeholder="Email or Mobile"
+    required
+>
 
 <!-- ADMIN PIN -->
-<input type="password" name="pin" id="pin" placeholder="Enter Admin PIN" style="display:none;">
+<input
+    type="password"
+    name="pin"
+    id="pin"
+    placeholder="Enter Admin PIN"
+    style="display:none;"
+>
 
-<!-- GPS (RESTORED) -->
+<!-- GPS -->
 <input type="hidden" name="latitude" id="latitude">
 <input type="hidden" name="longitude" id="longitude">
 
-<button type="submit">Sign In</button>
+<button type="submit">
+    Sign In
+</button>
 
 </form>
 
-<a href="/get-started">← Back</a>
+<a href="/get-started">
+    ← Back
+</a>
 
 </div>
 </div>
 
 <script>
+
 const adminEmail = "dl.1415.info@schools.sa.edu.au";
 
 document.getElementById("login_id").addEventListener("input", function () {
@@ -179,25 +233,61 @@ document.getElementById("login_id").addEventListener("input", function () {
     const pin = document.getElementById("pin");
 
     if (this.value.trim().toLowerCase() === adminEmail) {
+
         pin.style.display = "block";
+
     } else {
+
         pin.style.display = "none";
         pin.value = "";
     }
 });
 
-// ================= GPS (RESTORED FULL BEHAVIOR) =================
+
+// ================= GPS =================
 if (navigator.geolocation) {
+
     navigator.geolocation.getCurrentPosition(
+
         function(position){
-            document.getElementById("latitude").value = position.coords.latitude;
-            document.getElementById("longitude").value = position.coords.longitude;
+
+            document.getElementById("latitude").value =
+                position.coords.latitude;
+
+            document.getElementById("longitude").value =
+                position.coords.longitude;
         },
+
         function(error){
+
             console.log("Location permission denied");
         }
+
     );
 }
+
+
+// ================= AUTO TIMEOUT =================
+let timeout;
+
+function resetTimer(){
+
+    clearTimeout(timeout);
+
+    timeout = setTimeout(function(){
+
+        window.location.href = "/";
+
+    }, 30000);
+}
+
+window.onload = resetTimer;
+
+document.onmousemove = resetTimer;
+document.onkeypress = resetTimer;
+document.onclick = resetTimer;
+document.ontouchstart = resetTimer;
+
 </script>
 
 </body>
