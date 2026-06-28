@@ -203,6 +203,33 @@ def login():
     session['site'] = used_site  # ✅ kept feature
 
     return redirect('/dashboard')
+# ---------------- AUTO LOGOUT ----------------
+def auto_signout_expired_users():
+    conn = get_db()
+    c = conn.cursor()
+
+    now = datetime.now()
+    today_7pm = now.replace(hour=19, minute=0, second=0, microsecond=0)
+
+    if now >= today_7pm:
+        c.execute('''
+            SELECT id FROM logs
+            WHERE sign_out IS NULL
+        ''')
+
+        active_logs = c.fetchall()
+
+        for log in active_logs:
+            c.execute('''
+                UPDATE logs
+                SET sign_out=?
+                WHERE id=?
+            ''', ("signed in expired by 19:00", log['id']))
+
+        conn.commit()
+
+    conn.close()
+
 
 # ================= REGISTER =================
 @app.route('/register', methods=['GET', 'POST'])
