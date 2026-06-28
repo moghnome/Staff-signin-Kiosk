@@ -210,6 +210,81 @@ a {
     color:#c62828;
     font-weight:bold;
 }
+   /* ================= TABLET ================= */
+@media (max-width: 900px){
+
+    body{
+        flex-direction:row;
+    }
+
+    /* KEEP IMAGE ON SIDE */
+    .left{
+        width:40%;
+        display:block;
+        background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
+        background-size:cover;
+    }
+
+    .right{
+        width:60%;
+        min-height:100vh;
+        padding:80px 20px 20px;
+    }
+
+    .box{
+        width:100%;
+        max-width:380px;
+    }
+
+    .logo{
+        width:65px;
+        top:15px;
+        left:15px;
+    }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 600px){
+
+    body{
+        flex-direction:row;
+    }
+
+    /* KEEP SIDE IMAGE */
+    .left{
+        width:30%;
+        min-height:100vh;
+        display:block;
+        background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
+        background-size:cover;
+    }
+
+    .right{
+        width:70%;
+        min-height:100vh;
+        padding:70px 12px 20px;
+    }
+
+    .box{
+        width:100%;
+        max-width:100%;
+        padding:25px 18px;
+    }
+
+    h2{
+        font-size:22px;
+    }
+
+    input,
+    button{
+        font-size:15px;
+        padding:12px;
+    }
+
+    .logo{
+        width:55px;
+    }
+}
 </style>
 </head>
 
