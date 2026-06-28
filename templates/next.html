@@ -106,63 +106,75 @@ a{
 @media (max-width: 900px){
 
     body{
-        flex-direction:column;
+        flex-direction:row;
     }
 
-    /* KEEP BACKGROUND IMAGE */
+    /* KEEP IMAGE ON SIDE */
     .left{
-        width:100%;
-        height:35vh;
+        width:40%;
         display:block;
         background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
         background-size:cover;
     }
 
     .right{
-        width:100%;
-        min-height:65vh;
-        padding:90px 20px 30px;
+        width:60%;
+        min-height:100vh;
+        padding:80px 20px 20px;
     }
 
     .box{
-        max-width:420px;
         width:100%;
+        max-width:380px;
     }
 
     .logo{
-        width:70px;
+        width:65px;
         top:15px;
         left:15px;
     }
 }
 
 /* ================= MOBILE ================= */
-@media (max-width: 480px){
+@media (max-width: 600px){
 
+    body{
+        flex-direction:row;
+    }
+
+    /* KEEP SIDE IMAGE */
     .left{
-        height:30vh;
+        width:30%;
+        min-height:100vh;
+        display:block;
+        background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
+        background-size:cover;
     }
 
     .right{
-        padding:80px 15px 25px;
+        width:70%;
+        min-height:100vh;
+        padding:70px 12px 20px;
     }
 
     .box{
-        padding:30px 20px;
+        width:100%;
+        max-width:100%;
+        padding:25px 18px;
     }
 
     h2{
-        font-size:24px;
+        font-size:22px;
     }
 
     input,
     button{
         font-size:15px;
-        padding:13px;
+        padding:12px;
     }
 
     .logo{
-        width:60px;
+        width:55px;
     }
 }
 
@@ -257,6 +269,27 @@ if (navigator.geolocation) {
             pos.coords.longitude;
     });
 }
+
+// ================= AUTO TIMEOUT =================
+let timeout;
+
+function resetTimer(){
+
+    clearTimeout(timeout);
+
+    timeout = setTimeout(function(){
+
+        window.location.href = "/";
+
+    }, 30000);
+}
+
+window.onload = resetTimer;
+
+document.onmousemove = resetTimer;
+document.onkeypress = resetTimer;
+document.onclick = resetTimer;
+document.ontouchstart = resetTimer;
 
 </script>
 
