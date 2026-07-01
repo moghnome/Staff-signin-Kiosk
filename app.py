@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, Response
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from flask_sqlalchemy import SQLAlchemy
 from math import radians, cos, sin, sqrt, atan2
 from io import StringIO
@@ -29,9 +30,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# ================= TIME =================
+# ================= ADELAIDE TIME =================
 def now_sa():
-    return datetime.utcnow() + timedelta(hours=9, minutes=30)
+    return datetime.now(ZoneInfo("Australia/Adelaide"))
 
 # ================= SITE LOCATION =================
 SITES = [
@@ -39,11 +40,6 @@ SITES = [
         "name": "Plympton",
         "lat": -34.9622,
         "lon": 138.5485
-    },
-    {
-        "name": "Parafield Gardens",
-        "lat": -34.7926,
-        "lon": 138.6127
     }
 ]
 
@@ -52,6 +48,7 @@ MAX_DISTANCE = 150
 
 # ================= DISTANCE CHECK =================
 def calculate_distance(lat1, lon1, lat2, lon2):
+
     R = 6371000  # metres
 
     dlat = radians(lat2 - lat1)
@@ -94,10 +91,13 @@ class Log(db.Model):
 
 # ================= CREATE DB =================
 with app.app_context():
+
     db.create_all()
 
     admin = User.query.filter_by(email=ALLOWED_ADMIN_EMAIL).first()
+
     if not admin:
+
         db.session.add(User(
             name="Admin",
             email=ALLOWED_ADMIN_EMAIL,
@@ -106,7 +106,42 @@ with app.app_context():
             signature="Admin",
             accepted_terms=True
         ))
+
         db.session.commit()
+
+# ==================================================
+# AUTO SIGN OUT AT 7PM
+# ==================================================
+def auto_signout_expired_users():
+
+    now = now_sa()
+
+    today_7pm = now.replace(
+        hour=19,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    if now >= today_7pm:
+
+        active_logs = Log.query.filter_by(
+            sign_out=None
+        ).all()
+
+        for log in active_logs:
+
+            log.sign_out = now
+
+        db.session.commit()
+
+# ==================================================
+# RUN BEFORE EVERY REQUEST
+# ==================================================
+@app.before_request
+def before_request():
+
+    auto_signout_expired_users()
 
 # ================= ROUTES =================
 
@@ -135,16 +170,23 @@ def login():
 
     # ================= GPS VALIDATION =================
     try:
+
         latitude = float(latitude)
         longitude = float(longitude)
+
     except:
-        return render_template("login.html", error="Location access required")
+
+        return render_template(
+            "login.html",
+            error="Location access required"
+        )
 
     # ================= CHECK SITE PROXIMITY =================
     allowed = False
     used_site = None
 
     for site in SITES:
+
         distance = calculate_distance(
             latitude,
             longitude,
@@ -153,11 +195,13 @@ def login():
         )
 
         if distance <= MAX_DISTANCE:
+
             allowed = True
             used_site = site["name"]
             break
 
     if not allowed:
+
         return f"""
         <h2>Access Denied</h2>
         <p>You are not at an approved site.</p>
@@ -168,24 +212,42 @@ def login():
     if login_id == ALLOWED_ADMIN_EMAIL:
 
         if pin != ADMIN_PIN:
-            return render_template("login.html", error="Invalid admin PIN")
 
-        user = User.query.filter_by(email=ALLOWED_ADMIN_EMAIL).first()
+            return render_template(
+                "login.html",
+                error="Invalid admin PIN"
+            )
+
+        user = User.query.filter_by(
+            email=ALLOWED_ADMIN_EMAIL
+        ).first()
 
     else:
+
         user = User.query.filter(
             (User.email == login_id) |
             (User.mobile == login_id)
         ).first()
 
     if not user:
-        return render_template("login.html", error="User not found")
+
+        return render_template(
+            "login.html",
+            error="User not found"
+        )
 
     # ================= ACTIVE LOGIN CHECK =================
-    active_log = Log.query.filter_by(user_id=user.id, sign_out=None).first()
+    active_log = Log.query.filter_by(
+        user_id=user.id,
+        sign_out=None
+    ).first()
 
     if active_log:
-        return render_template("login.html", error="You are already signed in.")
+
+        return render_template(
+            "login.html",
+            error="You are already signed in."
+        )
 
     # ================= SAVE LOGIN =================
     new_log = Log(
@@ -200,36 +262,9 @@ def login():
 
     session['user_id'] = user.id
     session['role'] = user.role
-    session['site'] = used_site  # ✅ kept feature
+    session['site'] = used_site
 
     return redirect('/dashboard')
-# ---------------- AUTO LOGOUT ----------------
-def auto_signout_expired_users():
-    conn = get_db()
-    c = conn.cursor()
-
-    now = datetime.now()
-    today_7pm = now.replace(hour=19, minute=0, second=0, microsecond=0)
-
-    if now >= today_7pm:
-        c.execute('''
-            SELECT id FROM logs
-            WHERE sign_out IS NULL
-        ''')
-
-        active_logs = c.fetchall()
-
-        for log in active_logs:
-            c.execute('''
-                UPDATE logs
-                SET sign_out=?
-                WHERE id=?
-            ''', ("signed in expired by 19:00", log['id']))
-
-        conn.commit()
-
-    conn.close()
-
 
 # ================= REGISTER =================
 @app.route('/register', methods=['GET', 'POST'])
@@ -238,10 +273,15 @@ def register():
     if request.method == 'POST':
 
         name = request.form['name']
+
         email = request.form['email'].lower().strip()
+
         mobile = request.form['mobile']
+
         role = request.form['role'].lower().strip()
+
         signature = request.form['signature']
+
         accepted_terms = request.form.get('terms')
 
         if not accepted_terms:
@@ -251,7 +291,8 @@ def register():
             return "Not allowed to register as admin"
 
         existing_user = User.query.filter(
-            (User.email == email) | (User.mobile == mobile)
+            (User.email == email) |
+            (User.mobile == mobile)
         ).first()
 
         if existing_user:
@@ -265,6 +306,7 @@ def register():
             signature=signature,
             accepted_terms=True
         ))
+
         db.session.commit()
 
         return redirect('/returning')
@@ -281,46 +323,31 @@ def dashboard():
     user = User.query.get(session['user_id'])
 
     if not user:
+
         session.clear()
+
         return redirect('/returning')
 
-    latest_log = Log.query.filter_by(user_id=user.id).order_by(Log.id.desc()).first()
+    latest_log = Log.query.filter_by(
+        user_id=user.id
+    ).order_by(Log.id.desc()).first()
 
     signin_time = "N/A"
+
     if latest_log and latest_log.sign_in:
-        signin_time = latest_log.sign_in.strftime("%d/%m/%Y %H:%M")
+
+        signin_time = latest_log.sign_in.strftime(
+            "%d/%m/%Y %H:%M"
+        )
 
     return render_template(
         "dashboard.html",
         name=user.name,
         role=user.role,
         signin_time=signin_time,
-        site=session.get('site')  # optional display
-    )
-# ==================================================
-# AUTO SIGN OUT AT 7PM
-# ==================================================
-def auto_signout_expired_users():
-
-    now = now_sa()
-
-    today_7pm = now.replace(
-        hour=19,
-        minute=0,
-        second=0,
-        microsecond=0
+        site=session.get('site')
     )
 
-    if now >= today_7pm:
-
-        active_logs = Log.query.filter_by(
-            sign_out=None
-        ).all()
-
-        for log in active_logs:
-            log.sign_out = now_sa()
-
-        db.session.commit()
 # ==================================================
 # SIGN OUT PAGE
 # ==================================================
@@ -350,7 +377,9 @@ def logout():
     ).first()
 
     if log:
+
         log.sign_out = now_sa()
+
         db.session.commit()
 
     session.clear()
@@ -364,11 +393,11 @@ def logout():
 def terms():
     return render_template("terms.html")
 
-
 # ================= NEXT =================
 @app.route('/next')
 def next_visitor():
     return render_template("next.html")
+
 # ==================================================
 # SAVE NOTE
 # ==================================================
@@ -379,6 +408,7 @@ def save_note():
         return "Access denied"
 
     mobile = request.form.get('mobile')
+
     note = request.form.get('note')
 
     user = User.query.filter_by(
@@ -393,7 +423,9 @@ def save_note():
     ).order_by(Log.id.desc()).first()
 
     if latest_log:
+
         latest_log.note = note
+
         db.session.commit()
 
     return redirect('/report')
@@ -412,9 +444,15 @@ def report():
         Log.sign_in,
         Log.sign_out,
         Log.note
-    ).join(Log, User.id == Log.user_id).all()
+    ).join(
+        Log,
+        User.id == Log.user_id
+    ).all()
 
-    return render_template("report.html", data=data)
+    return render_template(
+        "report.html",
+        data=data
+    )
 
 # ================= CSV EXPORT =================
 @app.route('/export/csv')
@@ -430,18 +468,33 @@ def export_csv():
         Log.sign_in,
         Log.sign_out,
         Log.note
-    ).join(Log, User.id == Log.user_id).all()
+    ).join(
+        Log,
+        User.id == Log.user_id
+    ).all()
 
     si = StringIO()
+
     writer = csv.writer(si)
 
-    writer.writerow(["Name", "Mobile", "Role", "Sign In", "Sign Out", "Note"])
+    writer.writerow([
+        "Name",
+        "Mobile",
+        "Role",
+        "Sign In",
+        "Sign Out",
+        "Note"
+    ])
+
     writer.writerows(rows)
 
     return Response(
         si.getvalue(),
         mimetype="text/csv",
-        headers={"Content-Disposition": "attachment; filename=report.csv"}
+        headers={
+            "Content-Disposition":
+            "attachment; filename=report.csv"
+        }
     )
 
 # ================= RUN =================
