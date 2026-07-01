@@ -40,6 +40,11 @@ SITES = [
         "name": "Plympton",
         "lat": -34.9622,
         "lon": 138.5485
+    },
+    {
+        "name": "Parafield Gardens",
+        "lat": -34.7926,
+        "lon": 138.6127
     }
 ]
 
