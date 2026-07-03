@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, Response
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
 from flask_sqlalchemy import SQLAlchemy
 from math import radians, cos, sin, sqrt, atan2
 from io import StringIO
@@ -23,7 +22,11 @@ if not database_url:
     database_url = "sqlite:///database.db"
 
 if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    database_url = database_url.replace(
+        "postgres://",
+        "postgresql://",
+        1
+    )
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -32,7 +35,24 @@ db = SQLAlchemy(app)
 
 # ================= ADELAIDE TIME =================
 def now_sa():
-    return datetime.now(ZoneInfo("Australia/Adelaide"))
+
+    utc_now = datetime.utcnow()
+
+    month = utc_now.month
+
+    # Adelaide daylight savings
+    if month >= 10 or month <= 3:
+
+        return utc_now + timedelta(
+            hours=10,
+            minutes=30
+        )
+
+    # Normal Adelaide time
+    return utc_now + timedelta(
+        hours=9,
+        minutes=30
+    )
 
 # ================= SITE LOCATION =================
 SITES = [
@@ -54,7 +74,7 @@ MAX_DISTANCE = 150
 # ================= DISTANCE CHECK =================
 def calculate_distance(lat1, lon1, lat2, lon2):
 
-    R = 6371000  # metres
+    R = 6371000
 
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
@@ -72,26 +92,49 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
 # ================= MODELS =================
 class User(db.Model):
+
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
+
     name = db.Column(db.String(100))
+
     email = db.Column(db.String(100), unique=True)
+
     mobile = db.Column(db.String(20), unique=True)
+
     role = db.Column(db.String(50))
+
     signature = db.Column(db.Text)
-    accepted_terms = db.Column(db.Boolean, default=False)
+
+    accepted_terms = db.Column(
+        db.Boolean,
+        default=False
+    )
 
 
 class Log(db.Model):
+
     __tablename__ = "logs"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
     user_id = db.Column(db.Integer)
+
     sign_in = db.Column(db.DateTime)
-    sign_out = db.Column(db.DateTime, nullable=True)
+
+    sign_out = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
     note = db.Column(db.Text)
+
     latitude = db.Column(db.Float)
+
     longitude = db.Column(db.Float)
 
 # ================= CREATE DB =================
@@ -99,7 +142,9 @@ with app.app_context():
 
     db.create_all()
 
-    admin = User.query.filter_by(email=ALLOWED_ADMIN_EMAIL).first()
+    admin = User.query.filter_by(
+        email=ALLOWED_ADMIN_EMAIL
+    ).first()
 
     if not admin:
 
@@ -115,7 +160,7 @@ with app.app_context():
         db.session.commit()
 
 # ==================================================
-# AUTO SIGN OUT AT 7PM
+# AUTO SIGN OUT AT 7PM ADELAIDE TIME
 # ==================================================
 def auto_signout_expired_users():
 
@@ -152,25 +197,42 @@ def before_request():
 
 @app.route('/')
 def home():
+
+    auto_signout_expired_users()
+
     return render_template("index.html")
 
 
 @app.route('/get-started')
 def get_started():
+
+    auto_signout_expired_users()
+
     return render_template("get_started.html")
 
 
 @app.route('/returning')
 def returning():
+
+    auto_signout_expired_users()
+
     return render_template("login.html")
 
 # ================= LOGIN (WITH SITE CHECK) =================
 @app.route('/login', methods=['POST'])
 def login():
 
-    login_id = request.form.get('login_id', '').lower().strip()
+    auto_signout_expired_users()
+
+    login_id = request.form.get(
+        'login_id',
+        ''
+    ).lower().strip()
+
     pin = request.form.get('pin')
+
     latitude = request.form.get('latitude')
+
     longitude = request.form.get('longitude')
 
     # ================= GPS VALIDATION =================
@@ -188,6 +250,7 @@ def login():
 
     # ================= CHECK SITE PROXIMITY =================
     allowed = False
+
     used_site = None
 
     for site in SITES:
@@ -203,6 +266,7 @@ def login():
 
             allowed = True
             used_site = site["name"]
+
             break
 
     if not allowed:
@@ -263,6 +327,7 @@ def login():
     )
 
     db.session.add(new_log)
+
     db.session.commit()
 
     session['user_id'] = user.id
@@ -275,24 +340,37 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 
+    auto_signout_expired_users()
+
     if request.method == 'POST':
 
         name = request.form['name']
 
-        email = request.form['email'].lower().strip()
+        email = request.form[
+            'email'
+        ].lower().strip()
 
         mobile = request.form['mobile']
 
-        role = request.form['role'].lower().strip()
+        role = request.form[
+            'role'
+        ].lower().strip()
 
-        signature = request.form['signature']
+        signature = request.form[
+            'signature'
+        ]
 
-        accepted_terms = request.form.get('terms')
+        accepted_terms = request.form.get(
+            'terms'
+        )
 
         if not accepted_terms:
             return "You must accept terms"
 
-        if role == "admin" and email != ALLOWED_ADMIN_EMAIL:
+        if (
+            role == "admin"
+            and email != ALLOWED_ADMIN_EMAIL
+        ):
             return "Not allowed to register as admin"
 
         existing_user = User.query.filter(
@@ -322,10 +400,14 @@ def register():
 @app.route('/dashboard')
 def dashboard():
 
+    auto_signout_expired_users()
+
     if 'user_id' not in session:
         return redirect('/returning')
 
-    user = User.query.get(session['user_id'])
+    user = User.query.get(
+        session['user_id']
+    )
 
     if not user:
 
@@ -335,7 +417,9 @@ def dashboard():
 
     latest_log = Log.query.filter_by(
         user_id=user.id
-    ).order_by(Log.id.desc()).first()
+    ).order_by(
+        Log.id.desc()
+    ).first()
 
     signin_time = "N/A"
 
@@ -358,6 +442,9 @@ def dashboard():
 # ==================================================
 @app.route('/signout')
 def signout_page():
+
+    auto_signout_expired_users()
+
     return render_template("signout.html")
 
 # ==================================================
@@ -366,7 +453,11 @@ def signout_page():
 @app.route('/logout', methods=['POST'])
 def logout():
 
-    login_id = request.form.get('login_id')
+    auto_signout_expired_users()
+
+    login_id = request.form.get(
+        'login_id'
+    )
 
     user = User.query.filter(
         (User.email == login_id) |
@@ -396,11 +487,17 @@ def logout():
 # ==================================================
 @app.route('/terms')
 def terms():
+
+    auto_signout_expired_users()
+
     return render_template("terms.html")
 
 # ================= NEXT =================
 @app.route('/next')
 def next_visitor():
+
+    auto_signout_expired_users()
+
     return render_template("next.html")
 
 # ==================================================
@@ -408,6 +505,8 @@ def next_visitor():
 # ==================================================
 @app.route('/save_note', methods=['POST'])
 def save_note():
+
+    auto_signout_expired_users()
 
     if session.get('role') != 'admin':
         return "Access denied"
@@ -425,7 +524,9 @@ def save_note():
 
     latest_log = Log.query.filter_by(
         user_id=user.id
-    ).order_by(Log.id.desc()).first()
+    ).order_by(
+        Log.id.desc()
+    ).first()
 
     if latest_log:
 
@@ -438,6 +539,8 @@ def save_note():
 # ================= REPORT =================
 @app.route('/report')
 def report():
+
+    auto_signout_expired_users()
 
     if session.get('role') != 'admin':
         return "Access denied"
@@ -462,6 +565,8 @@ def report():
 # ================= CSV EXPORT =================
 @app.route('/export/csv')
 def export_csv():
+
+    auto_signout_expired_users()
 
     if session.get('role') != 'admin':
         return "Access denied"
