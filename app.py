@@ -248,40 +248,40 @@ def login():
             error="Location access required"
         )
 
-    # ================= CHECK SITE PROXIMITY =================
-allowed = False
-used_site = "Remote Admin Access"
+   # ================= CHECK SITE PROXIMITY =================
+    allowed = False
+    used_site = "Remote Admin Access"
 
-# ✅ ADMIN CAN LOGIN FROM ANYWHERE
-if login_id == ALLOWED_ADMIN_EMAIL:
+    # ✅ ADMIN CAN LOGIN FROM ANYWHERE
+    if login_id == ALLOWED_ADMIN_EMAIL:
 
-    allowed = True
+        allowed = True
 
-else:
+    else:
 
-    for site in SITES:
+        for site in SITES:
 
-        distance = calculate_distance(
-            latitude,
-            longitude,
-            site["lat"],
-            site["lon"]
-        )
+            distance = calculate_distance(
+                latitude,
+                longitude,
+                site["lat"],
+                site["lon"]
+            )
 
-        if distance <= MAX_DISTANCE:
+            if distance <= MAX_DISTANCE:
 
-            allowed = True
-            used_site = site["name"]
-            break
+                allowed = True
+                used_site = site["name"]
+                break
 
-# ================= BLOCK NON-SITE USERS =================
-if not allowed:
+    # ================= BLOCK NON-SITE USERS =================
+    if not allowed:
 
-    return f"""
-    <h2>Access Denied</h2>
-    <p>You are not at an approved site.</p>
-    <p>Your distance is too far from all locations.</p>
-    """
+        return f"""
+        <h2>Access Denied</h2>
+        <p>You are not at an approved site.</p>
+        <p>Your distance is too far from all locations.</p>
+        """
     # ================= ADMIN LOGIN =================
     if login_id == ALLOWED_ADMIN_EMAIL:
 
