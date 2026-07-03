@@ -249,9 +249,15 @@ def login():
         )
 
     # ================= CHECK SITE PROXIMITY =================
-    allowed = False
+allowed = False
+used_site = "Remote Admin Access"
 
-    used_site = None
+# ✅ ADMIN CAN LOGIN FROM ANYWHERE
+if login_id == ALLOWED_ADMIN_EMAIL:
+
+    allowed = True
+
+else:
 
     for site in SITES:
 
@@ -266,17 +272,16 @@ def login():
 
             allowed = True
             used_site = site["name"]
-
             break
 
-    if not allowed:
+# ================= BLOCK NON-SITE USERS =================
+if not allowed:
 
-        return f"""
-        <h2>Access Denied</h2>
-        <p>You are not at an approved site.</p>
-        <p>Your distance is too far from all locations.</p>
-        """
-
+    return f"""
+    <h2>Access Denied</h2>
+    <p>You are not at an approved site.</p>
+    <p>Your distance is too far from all locations.</p>
+    """
     # ================= ADMIN LOGIN =================
     if login_id == ALLOWED_ADMIN_EMAIL:
 
