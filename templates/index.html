@@ -133,121 +133,130 @@
     }
 </style>
 
-    <title>Welcome</title>
+<title>Welcome</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            height: 100vh;
-        }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        height: 100vh;
+    }
 
+    .left {
+        width: 50%;
+        background: url("{{ url_for('static', filename='ashford_special_school.jpg') }}") no-repeat center;
+        background-size: cover;
+    }
+
+    .right {
+        width: 50%;
+        background: linear-gradient(135deg, #c62828, #e53935);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    .logo {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 90px;
+    }
+
+    .box {
+        background: white;
+        padding: 45px 35px;
+        border-radius: 12px;
+        text-align: center;
+        width: 320px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        color: #333;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 12px;
+        background: #c62828;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #a61c1c;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    /* DATE & TIME */
+    .datetime {
+        margin-bottom: 20px;
+        font-size: 15px;
+        font-weight: bold;
+        color: #444;
+        line-height: 1.5;
+    }
+
+    /* LABEL */
+    .footer-label {
+        position: fixed;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #660000;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 768px) {
         .left {
-            width: 50%;
-            background: url("{{ url_for('static', filename='ashford_special_school.jpg') }}") no-repeat center;
-            background-size: cover;
+            display: none;
         }
 
         .right {
-            width: 50%;
-            background: linear-gradient(135deg, #c62828, #e53935);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        .logo {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 90px;
-        }
-
-        .box {
-            background: white;
-            padding: 45px 35px;
-            border-radius: 12px;
-            text-align: center;
-            width: 320px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        h1 {
-            margin-bottom: 25px;
-            color: #333;
-        }
-
-        button {
             width: 100%;
-            padding: 12px;
-            margin-top: 12px;
-            background: #c62828;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 15px;
-            transition: 0.3s;
         }
+    }
+</style>
 
-        button:hover {
-            background: #a61c1c;
-        }
+<!-- AUTO REDIRECT SCRIPT -->
+<script>
+    let timeout;
 
-        a {
-            text-decoration: none;
-        }
+    function resetTimer() {
+        clearTimeout(timeout);
 
-        /* ✅ NEW LABEL STYLE */
-        .footer-label {
-            position: fixed;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #660000;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+        timeout = setTimeout(() => {
+            window.location.href = "/";
+        }, 30000);
+    }
 
-        @media (max-width: 768px) {
-            .left {
-                display: none;
-            }
-
-            .right {
-                width: 100%;
-            }
-        }
-    </style>
-
-    <!-- AUTO REDIRECT SCRIPT -->
-    <script>
-        let timeout;
-
-        function resetTimer() {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                window.location.href = "/";
-            }, 30000); // 30 seconds
-        }
-
-        // Reset timer on any interaction
-        window.onload = resetTimer;
-        document.onmousemove = resetTimer;
-        document.onkeypress = resetTimer;
-        document.ontouchstart = resetTimer;
-        document.onclick = resetTimer;
-    </script>
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.ontouchstart = resetTimer;
+    document.onclick = resetTimer;
+</script>
 
 </head>
 
@@ -260,7 +269,11 @@
     <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
 
     <div class="box">
+
         <h1>Welcome</h1>
+
+        <!-- DATE & TIME -->
+        <div id="datetime" class="datetime"></div>
 
         <a href="/get-started">
             <button>Get Started</button>
@@ -274,11 +287,40 @@
 
 </div>
 
-<!-- ✅ NEW LABEL -->
+<!-- LABEL -->
 <div class="footer-label">
     This application has been developed by the author. All rights are reserved.
-
 </div>
+
+<!-- DATE & TIME SCRIPT -->
+<script>
+function updateDateTime(){
+
+    const now = new Date();
+
+    const options = {
+        timeZone: "Australia/Adelaide",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    };
+
+    const formatted = now.toLocaleString(
+        "en-AU",
+        options
+    );
+
+    document.getElementById("datetime").innerHTML = formatted;
+}
+
+updateDateTime();
+
+setInterval(updateDateTime, 1000);
+</script>
 
 </body>
 </html>
