@@ -443,6 +443,56 @@ def dashboard():
     )
 
 # ==================================================
+# LABEL
+# ==================================================
+
+@app.route("/label")
+def label():
+
+    if "user_id" not in session:
+        return redirect("/returning")
+
+    user = User.query.get(session["user_id"])
+
+    latest_log = Log.query.filter_by(
+        user_id=user.id
+    ).order_by(Log.id.desc()).first()
+
+    signin_time = latest_log.sign_in.strftime("%d/%m/%Y %H:%M")
+
+    return render_template(
+        "label.html",
+        name=user.name,
+        role=user.role,
+        signin_time=signin_time
+    )
+
+# ==================================================
+# AUTO SIGN OUT AT 7PM
+# ==================================================
+def auto_signout_expired_users():
+
+    now = now_sa()
+
+    today_7pm = now.replace(
+        hour=19,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    if now >= today_7pm:
+
+        active_logs = Log.query.filter_by(
+            sign_out=None
+        ).all()
+
+        for log in active_logs:
+            log.sign_out = now_sa()
+
+        db.session.commit()
+
+# ==================================================
 # SIGN OUT PAGE
 # ==================================================
 @app.route('/signout')
