@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+
 <meta charset="UTF-8">
-<title>Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Thank You</title>
 
 <style>
 
@@ -15,20 +16,17 @@
 }
 
 body{
-    font-family:"Segoe UI";
+    font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     display:flex;
     min-height:100vh;
-    overflow-x:hidden;
 }
 
-/* LEFT SIDE */
 .left{
     width:50%;
-    background:url("{{ url_for('static', filename='ESEC images.jpg') }}") center center no-repeat;
+    background:url("{{ url_for('static', filename='Outsideimages.jpg') }}") center center no-repeat;
     background-size:cover;
 }
 
-/* RIGHT SIDE */
 .right{
     width:50%;
     background:linear-gradient(135deg,#c62828,#e53935);
@@ -39,146 +37,81 @@ body{
     padding:20px;
 }
 
-/* LOGO */
 .logo{
     position:absolute;
     top:20px;
     left:20px;
-    width:80px;
-    z-index:2;
+    width:90px;
 }
 
-/* LOGIN BOX */
 .box{
-    background:#fff;
-    padding:40px;
-    border-radius:10px;
+    background:white;
     width:100%;
-    max-width:320px;
+    max-width:340px;
+    padding:40px 30px;
+    border-radius:12px;
     text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
 }
 
-/* HEADING */
 h2{
+    color:#333;
     margin-bottom:15px;
 }
 
-/* INPUTS */
-input,
+p{
+    color:#666;
+    margin:8px 0;
+}
+
+.timer{
+    font-size:13px;
+    color:#888;
+}
+
+a{
+    text-decoration:none;
+}
+
 button{
     width:100%;
     padding:12px;
-    margin-top:10px;
+    margin-top:15px;
+    border:none;
     border-radius:6px;
-    border:1px solid #ccc;
-    font-size:16px;
-}
-
-/* BUTTON */
-button{
     background:#c62828;
     color:white;
-    border:none;
+    font-size:16px;
     cursor:pointer;
+    transition:.3s;
 }
 
 button:hover{
     background:#a61c1c;
 }
 
-/* ERROR */
-.error{
-    color:red;
-    margin-bottom:10px;
-    font-weight:bold;
-}
+@media(max-width:768px){
 
-/* LINK */
-a{
-    display:inline-block;
-    margin-top:15px;
-    color:#c62828;
-    text-decoration:none;
-}
-
-/* ================= TABLET ================= */
-@media (max-width: 900px){
-
-    body{
-        flex-direction:row;
-    }
-
-    /* KEEP IMAGE ON SIDE */
     .left{
-        width:40%;
-        display:block;
-        background:url("{{ url_for('static', filename='imagesESEC2.jpg') }}") center center no-repeat;
-        background-size:cover;
+        display:none;
     }
 
     .right{
-        width:60%;
-        min-height:100vh;
-        padding:80px 20px 20px;
-    }
-
-    .box{
         width:100%;
-        max-width:380px;
     }
 
     .logo{
-        width:65px;
-        top:15px;
-        left:15px;
-    }
-}
-
-/* ================= MOBILE ================= */
-@media (max-width: 600px){
-
-    body{
-        flex-direction:row;
-    }
-
-    /* KEEP SIDE IMAGE */
-    .left{
-        width:30%;
-        min-height:100vh;
-        display:block;
-        background:url("{{ url_for('static', filename='Junior_images3.jpg') }}") center center no-repeat;
-        background-size:cover;
-    }
-
-    .right{
-        width:70%;
-        min-height:100vh;
-        padding:70px 12px 20px;
+        width:70px;
     }
 
     .box{
-        width:100%;
-        max-width:100%;
-        padding:25px 18px;
+        max-width:320px;
     }
 
-    h2{
-        font-size:22px;
-    }
-
-    input,
-    button{
-        font-size:15px;
-        padding:12px;
-    }
-
-    .logo{
-        width:55px;
-    }
 }
 
 </style>
+
 </head>
 
 <body>
@@ -195,101 +128,55 @@ a{
 
 <div class="box">
 
-<h2>Login</h2>
+<h2>Thank You</h2>
 
-{% if error %}
-<div class="error">
-    {{ error }}
-</div>
-{% endif %}
+<p>Please go to <strong>Next Visitor</strong>.</p>
 
-<form method="POST" action="/login">
+<p class="timer">
+This page will automatically return to the Home Page after 30 seconds of inactivity.
+</p>
 
-<input
-    type="text"
-    name="login_id"
-    id="login_id"
-    placeholder="Email or Mobile"
-    required
->
+<a href="/returning">
+    <button type="button">
+        ➡ Next Visitor
+    </button>
+</a>
 
-<input
-    type="password"
-    name="pin"
-    id="pin"
-    placeholder="Admin PIN"
-    style="display:none;"
->
-
-<input type="hidden" name="latitude" id="latitude">
-<input type="hidden" name="longitude" id="longitude">
-
-<button type="submit">
-    Sign In
-</button>
-
-</form>
-
-<a href="/get-started">
-    Back
+<a href="/">
+    <button type="button">
+        ⬅ Back to Home
+    </button>
 </a>
 
 </div>
+
 </div>
 
 <script>
 
-const adminEmail = "dl.1415.info@schools.sa.edu.au";
-
-document.getElementById("login_id").addEventListener("input", function(){
-
-    let pin = document.getElementById("pin");
-
-    if(this.value.toLowerCase() === adminEmail){
-
-        pin.style.display = "block";
-
-    } else {
-
-        pin.style.display = "none";
-        pin.value = "";
-    }
-});
-
-
-// GPS
-if (navigator.geolocation) {
-
-    navigator.geolocation.getCurrentPosition(function(pos){
-
-        document.getElementById("latitude").value =
-            pos.coords.latitude;
-
-        document.getElementById("longitude").value =
-            pos.coords.longitude;
-    });
-}
-
-// ================= AUTO TIMEOUT =================
 let timeout;
 
 function resetTimer(){
 
     clearTimeout(timeout);
 
-    timeout = setTimeout(function(){
+    timeout=setTimeout(function(){
 
-        window.location.href = "/";
+        window.location.href="/";
 
-    }, 30000);
+    },30000);
+
 }
 
-window.onload = resetTimer;
+window.addEventListener("load",resetTimer);
 
-document.onmousemove = resetTimer;
-document.onkeypress = resetTimer;
-document.onclick = resetTimer;
-document.ontouchstart = resetTimer;
+document.addEventListener("mousemove",resetTimer);
+
+document.addEventListener("keypress",resetTimer);
+
+document.addEventListener("click",resetTimer);
+
+document.addEventListener("touchstart",resetTimer);
 
 </script>
 
