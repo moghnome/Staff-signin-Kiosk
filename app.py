@@ -341,6 +341,21 @@ def login():
 
     return redirect('/dashboard')
 
+# ================= MAKE STAFF =================
+@app.route("/make-staff/<int:user_id>")
+def make_staff(user_id):
+
+    if session.get("role") != "admin":
+        return "Access denied"
+
+    user = User.query.get(user_id)
+
+    if user:
+        user.role = "staff"
+        db.session.commit()
+
+    return redirect("/report")
+    
 # ================= REGISTER =================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
