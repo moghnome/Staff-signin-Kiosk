@@ -587,15 +587,15 @@ def report():
 
     if session.get('role') != 'admin':
         return "Access denied"
-
     data = db.session.query(
-        User.name,
-        User.mobile,
-        User.role,
-        Log.sign_in,
-        Log.sign_out,
-        Log.note
-    ).join(
+    User.id.label("user_id"),
+    User.name,
+    User.mobile,
+    User.role,
+    Log.sign_in,
+    Log.sign_out,
+    Log.note
+).join(
         Log,
         User.id == Log.user_id
     ).all()
@@ -615,12 +615,13 @@ def export_csv():
         return "Access denied"
 
     rows = db.session.query(
-        User.name,
-        User.mobile,
-        User.role,
-        Log.sign_in,
-        Log.sign_out,
-        Log.note
+    User.id.label("user_id"),
+    User.name,
+    User.mobile,
+    User.role,
+    Log.sign_in,
+    Log.sign_out,
+    Log.note
     ).join(
         Log,
         User.id == Log.user_id
