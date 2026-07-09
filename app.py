@@ -59,23 +59,29 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-
-
-# ==================================================
-# ADELAIDE TIME
-# ==================================================
-
+# ================= ADELAIDE TIME =================
 def now_sa():
 
-    """
-    Current Adelaide time.
-    Automatically handles daylight saving.
-    """
+    utc_now = datetime.utcnow()
 
-    return datetime.now(
-        ZoneInfo("Australia/Adelaide")
+    month = utc_now.month
+
+    # Adelaide daylight savings
+    if month >= 10 or month <= 3:
+
+        return utc_now + timedelta(
+            hours=10,
+            minutes=30
+        )
+
+    # Normal Adelaide time
+    return utc_now + timedelta(
+        hours=9,
+        minutes=30
     )
-
+# ---------------- ADELAIDE TIME FIX ----------------
+def now_sa():
+    return datetime.utcnow() + timedelta(hours=9, minutes=30)
 
 
 # ==================================================
