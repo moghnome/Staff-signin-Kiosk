@@ -811,86 +811,34 @@ def dashboard():
         site=session.get("site")
 
     )
-    # ==================================================
-# LABEL PRINT PAGE
 # ==================================================
+# PRINT LABEL
+# ==================================================
+@app.route('/print-label')
+def print_label():
 
-@app.route("/label")
-def label():
+    if 'user_id' not in session:
+        return redirect('/returning')
 
-
-    if "user_id" not in session:
-
-
-        return redirect(
-            "/returning"
-        )
-
-
-
-    user = db.session.get(
-
-        User,
-
-        session["user_id"]
-
-    )
-
-
-
-    if not user:
-
-
-        session.clear()
-
-
-        return redirect(
-            "/returning"
-        )
-
-
+    user = User.query.get(session['user_id'])
 
     latest_log = Log.query.filter_by(
-
         user_id=user.id
-
-    ).order_by(
-
-        Log.id.desc()
-
-    ).first()
-
-
+    ).order_by(Log.id.desc()).first()
 
     signin_time = "N/A"
 
-
-
-    if latest_log and latest_log.sign_in:
-
-
+    if latest_log:
         signin_time = latest_log.sign_in.strftime(
-
             "%d/%m/%Y %H:%M"
-
         )
 
-
-
     return render_template(
-
         "label.html",
-
         name=user.name,
-
         role=user.role,
-
         signin_time=signin_time
-
     )
-
-
-
 
 # ==================================================
 # SIGN OUT PAGE
