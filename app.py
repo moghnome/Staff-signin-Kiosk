@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, Response
-from datetime import datetime, time, timedelta
-from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from math import radians, cos, sin, sqrt, atan2
 from io import StringIO
@@ -9,23 +8,19 @@ import os
 
 app = Flask(__name__)
 
-# ==================== SECRET KEY ==============================
-
+# ================= SECRET =================
 app.secret_key = "secret123#1415ESEC"
 
-# =================== ADMIN SETTINGS ===============================
-
+# ================= ADMIN =================
 ALLOWED_ADMIN_EMAIL = "dl.1415.info@schools.sa.edu.au"
 ADMIN_PIN = "admin123#1415ESEC"
 
-# =================== DATABASE ===============================
-
+# ================= DATABASE =================
 database_url = os.environ.get("DATABASE_URL")
 
 if not database_url:
     database_url = "sqlite:///database.db"
 
-# Render PostgreSQL fix
 if database_url.startswith("postgres://"):
     database_url = database_url.replace(
         "postgres://",
@@ -33,18 +28,33 @@ if database_url.startswith("postgres://"):
         1
     )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
 # ================= ADELAIDE TIME =================
-
 def now_sa():
-    return datetime.now(ZoneInfo("Australia/Adelaide"))
 
-# =================== APPROVED SITES ===============================
+    utc_now = datetime.utcnow()
 
+    month = utc_now.month
+
+    # Adelaide daylight savings
+    if month >= 10 or month <= 3:
+
+        return utc_now + timedelta(
+            hours=10,
+            minutes=30
+        )
+
+    # Normal Adelaide time
+    return utc_now + timedelta(
+        hours=9,
+        minutes=30
+    )
+
+# ================= SITE LOCATION =================
 SITES = [
     {
         "name": "Plympton",
@@ -58,16 +68,12 @@ SITES = [
     }
 ]
 
+# Allowed distance in metres
 MAX_DISTANCE = 150
 
-# ==================== DISTANCE CALCULATION ==============================
+# ================= DISTANCE CHECK =================
+def calculate_distance(lat1, lon1, lat2, lon2):
 
-def calculate_distance(
-        lat1,
-        lon1,
-        lat2,
-        lon2
-):
     R = 6371000
 
     dlat = radians(lat2 - lat1)
@@ -75,53 +81,31 @@ def calculate_distance(
 
     a = (
         sin(dlat / 2) ** 2
-        +
-        cos(radians(lat1))
-        *
-        cos(radians(lat2))
-        *
-        sin(dlon / 2) ** 2
+        + cos(radians(lat1))
+        * cos(radians(lat2))
+        * sin(dlon / 2) ** 2
     )
 
-    c = 2 * atan2(
-        sqrt(a),
-        sqrt(1 - a)
-    )
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     return R * c
 
-# ====================== DATABASE MODELS ============================
-
+# ================= MODELS =================
 class User(db.Model):
 
     __tablename__ = "users"
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
 
-    name = db.Column(
-        db.String(100)
-    )
+    name = db.Column(db.String(100))
 
-    email = db.Column(
-        db.String(100),
-        unique=True
-    )
+    email = db.Column(db.String(100), unique=True)
 
-    mobile = db.Column(
-        db.String(20),
-        unique=True
-    )
+    mobile = db.Column(db.String(20), unique=True)
 
-    role = db.Column(
-        db.String(50)
-    )
+    role = db.Column(db.String(50))
 
-    signature = db.Column(
-        db.Text
-    )
+    signature = db.Column(db.Text)
 
     accepted_terms = db.Column(
         db.Boolean,
@@ -138,33 +122,22 @@ class Log(db.Model):
         primary_key=True
     )
 
-    user_id = db.Column(
-        db.Integer
-    )
+    user_id = db.Column(db.Integer)
 
-    sign_in = db.Column(
-        db.DateTime
-    )
+    sign_in = db.Column(db.DateTime)
 
     sign_out = db.Column(
         db.DateTime,
         nullable=True
     )
 
-    note = db.Column(
-        db.Text
-    )
+    note = db.Column(db.Text)
 
-    latitude = db.Column(
-        db.Float
-    )
+    latitude = db.Column(db.Float)
 
-    longitude = db.Column(
-        db.Float
-    )
+    longitude = db.Column(db.Float)
 
-# ===================== CREATE DATABASE + ADMIN ACCOUNT =============================
-
+# ================= CREATE DB =================
 with app.app_context():
 
     db.create_all()
@@ -175,102 +148,113 @@ with app.app_context():
 
     if not admin:
 
-        db.session.add(
-
-            User(
-                name="Admin",
-                email=ALLOWED_ADMIN_EMAIL,
-                mobile="0000000000",
-                role="admin",
-                signature="Admin",
-                accepted_terms=True
-            )
-
-        )
+        db.session.add(User(
+            name="Admin",
+            email=ALLOWED_ADMIN_EMAIL,
+            mobile="0000000000",
+            role="admin",
+            signature="Admin",
+            accepted_terms=True
+        ))
 
         db.session.commit()
 
-# ======================= AUTO SIGN OUT FUNCTION ===========================
-
+# ==================================================
+# AUTO SIGN OUT AT 7PM ADELAIDE TIME
+# ==================================================
 def auto_signout_expired_users():
 
-    current_time = now_sa()
+    now = now_sa()
 
-    if current_time.time() >= time(19, 0):
+    today_7pm = now.replace(
+        hour=19,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    if now >= today_7pm:
 
         active_logs = Log.query.filter_by(
             sign_out=None
         ).all()
 
         for log in active_logs:
-            log.sign_out = current_time
+
+            log.sign_out = now
 
         db.session.commit()
 
-# ============ RUN AUTO SIGN OUT BEFORE EACH REQUEST ===============
-
+# ==================================================
+# RUN BEFORE EVERY REQUEST
+# ==================================================
 @app.before_request
 def before_request():
+
     auto_signout_expired_users()
 
-# ====================== HOME PAGE ============================
+# ================= ROUTES =================
 
-@app.route("/")
+@app.route('/')
 def home():
-    return render_template(
-        "index.html"
-    )
-# ===================== GET STARTED =============================
 
-@app.route("/get-started")
+    auto_signout_expired_users()
+
+    return render_template("index.html")
+
+
+@app.route('/get-started')
 def get_started():
-    return render_template(
-        "get_started.html"
-    )
-# ==================== RETURNING USER LOGIN PAGE ==================
 
-@app.route("/returning")
+    auto_signout_expired_users()
+
+    return render_template("get_started.html")
+
+
+@app.route('/returning')
 def returning():
-    return render_template(
-        "login.html"
-    )
-# =================== LOGIN ===============================
 
-@app.route(
-    "/login",
-    methods=["POST"]
-)
+    auto_signout_expired_users()
+
+    return render_template("login.html")
+
+# ================= LOGIN (WITH SITE CHECK) =================
+@app.route('/login', methods=['POST'])
 def login():
 
+    auto_signout_expired_users()
+
     login_id = request.form.get(
-        "login_id",
-        ""
+        'login_id',
+        ''
     ).lower().strip()
 
-    pin = request.form.get("pin")
+    pin = request.form.get('pin')
 
-    latitude = request.form.get("latitude")
-    longitude = request.form.get("longitude")
+    latitude = request.form.get('latitude')
 
-    # ================= GPS CHECK =================
+    longitude = request.form.get('longitude')
 
+    # ================= GPS VALIDATION =================
     try:
+
         latitude = float(latitude)
         longitude = float(longitude)
 
-    except (TypeError, ValueError):
+    except:
 
         return render_template(
             "login.html",
-            error="Location access required."
+            error="Location access required"
         )
 
+   # ================= CHECK SITE PROXIMITY =================
     allowed = False
     used_site = "Remote Admin Access"
 
-    # ================= ADMIN BYPASS =================
-
+    # ✅ ADMIN CAN LOGIN FROM ANYWHERE
     if login_id == ALLOWED_ADMIN_EMAIL:
+
         allowed = True
 
     else:
@@ -290,22 +274,22 @@ def login():
                 used_site = site["name"]
                 break
 
+    # ================= BLOCK NON-SITE USERS =================
     if not allowed:
 
-        return render_template(
-            "login.html",
-            error="You must be at an approved site to sign in."
-        )
-
+        return f"""
+        <h2>Access Denied</h2>
+        <p>You are not at an approved site.</p>
+        <p>Your distance is too far from all locations.</p>
+        """
     # ================= ADMIN LOGIN =================
-
     if login_id == ALLOWED_ADMIN_EMAIL:
 
         if pin != ADMIN_PIN:
 
             return render_template(
                 "login.html",
-                error="Invalid admin PIN."
+                error="Invalid admin PIN"
             )
 
         user = User.query.filter_by(
@@ -323,11 +307,10 @@ def login():
 
         return render_template(
             "login.html",
-            error="User not found."
+            error="User not found"
         )
 
     # ================= ACTIVE LOGIN CHECK =================
-
     active_log = Log.query.filter_by(
         user_id=user.id,
         sign_out=None
@@ -340,8 +323,7 @@ def login():
             error="You are already signed in."
         )
 
-    # ================= CREATE LOGIN RECORD =================
-
+    # ================= SAVE LOGIN =================
     new_log = Log(
         user_id=user.id,
         sign_in=now_sa(),
@@ -350,55 +332,50 @@ def login():
     )
 
     db.session.add(new_log)
+
     db.session.commit()
 
-    session["user_id"] = user.id
-    session["role"] = user.role
-    session["site"] = used_site
+    session['user_id'] = user.id
+    session['role'] = user.role
+    session['site'] = used_site
 
-    return redirect("/dashboard")
+    return redirect('/dashboard')
 
-# ================= REGISTER ===============================
-
-@app.route(
-    "/register",
-    methods=["GET", "POST"]
-)
+# ================= REGISTER =================
+@app.route('/register', methods=['GET', 'POST'])
 def register():
 
-    if request.method == "POST":
+    auto_signout_expired_users()
 
-        name = request.form.get(
-            "name",
-            ""
-        ).strip()
+    if request.method == 'POST':
 
-        email = request.form.get(
-            "email",
-            ""
-        ).lower().strip()
+        name = request.form['name']
 
-        mobile = request.form.get(
-            "mobile",
-            ""
-        ).strip()
+        email = request.form[
+            'email'
+        ].lower().strip()
 
-        role = request.form.get(
-            "role",
-            ""
-        ).lower().strip()
+        mobile = request.form['mobile']
 
-        signature = request.form.get(
-            "signature",
-            ""
+        role = request.form[
+            'role'
+        ].lower().strip()
+
+        signature = request.form[
+            'signature'
+        ]
+
+        accepted_terms = request.form.get(
+            'terms'
         )
-
-        accepted_terms = request.form.get("terms")
 
         if not accepted_terms:
             return "You must accept terms"
 
-        if role == "admin" and email != ALLOWED_ADMIN_EMAIL:
+        if (
+            role == "admin"
+            and email != ALLOWED_ADMIN_EMAIL
+        ):
             return "Not allowed to register as admin"
 
         existing_user = User.query.filter(
@@ -409,41 +386,39 @@ def register():
         if existing_user:
             return "User already exists"
 
-        new_user = User(
+        db.session.add(User(
             name=name,
             email=email,
             mobile=mobile,
             role=role,
             signature=signature,
             accepted_terms=True
-        )
+        ))
 
-        db.session.add(new_user)
         db.session.commit()
 
-        return redirect("/returning")
+        return redirect('/returning')
 
     return render_template("register.html")
 
-
-# ================= DASHBOARD ===============================
-
-@app.route("/dashboard")
+# ================= DASHBOARD =================
+@app.route('/dashboard')
 def dashboard():
 
-    if "user_id" not in session:
-        return redirect("/returning")
+    auto_signout_expired_users()
 
-    user = db.session.get(
-        User,
-        session["user_id"]
+    if 'user_id' not in session:
+        return redirect('/returning')
+
+    user = User.query.get(
+        session['user_id']
     )
 
     if not user:
 
         session.clear()
 
-        return redirect("/returning")
+        return redirect('/returning')
 
     latest_log = Log.query.filter_by(
         user_id=user.id
@@ -464,24 +439,22 @@ def dashboard():
         name=user.name,
         role=user.role,
         signin_time=signin_time,
-        site=session.get("site")
+        site=session.get('site')
     )
-# ===================== PRINT LABEL =============================
 
-@app.route("/print-label")
-def print_label():
+# ==================== LABEL ======================
 
-    if "user_id" not in session:
-        return redirect("/returning")
+@app.route('/label')
+def label():
 
-    user = db.session.get(
-        User,
-        session["user_id"]
-    )
+    if 'user_id' not in session:
+        return redirect('/returning')
+
+    user = db.session.get(User, session['user_id'])
 
     if not user:
         session.clear()
-        return redirect("/returning")
+        return redirect('/returning')
 
     latest_log = Log.query.filter_by(
         user_id=user.id
@@ -502,51 +475,49 @@ def print_label():
         role=user.role,
         signin_time=signin_time
     )
+# ==================================================
+# AUTO SIGN OUT AT 7PM
+# ==================================================
+def auto_signout_expired_users():
 
-# ===================== SIGN OUT PAGE =============================
+    now = now_sa()
 
-@app.route("/signout")
-def signout_page():
-
-    return render_template(
-        "signout.html"
+    today_7pm = now.replace(
+        hour=19,
+        minute=0,
+        second=0,
+        microsecond=0
     )
 
-# ==================== LOGOUT ==============================
+    if now >= today_7pm:
 
-@app.route(
-    "/logout",
-    methods=["GET", "POST"]
-)
+        active_logs = Log.query.filter_by(
+            sign_out=None
+        ).all()
+
+        for log in active_logs:
+            log.sign_out = now_sa()
+
+        db.session.commit()
+
+# ======================= SIGN OUT PAGE =========================
+@app.route('/signout')
+def signout_page():
+    return render_template("signout.html")
+
+# ================== LOGOUT ==============================
+@app.route('/logout', methods=['POST'])
 def logout():
 
-    login_id = request.form.get(
-        "login_id",
-        ""
-    ).lower().strip()
+    login_id = request.form.get('login_id')
 
-    if not login_id:
-
-        if "user_id" in session:
-            user = db.session.get(
-                User,
-                session["user_id"]
-            )
-        else:
-            user = None
-
-    else:
-
-        user = User.query.filter(
-            (User.email == login_id) |
-            (User.mobile == login_id)
-        ).first()
+    user = User.query.filter(
+        (User.email == login_id) |
+        (User.mobile == login_id)
+    ).first()
 
     if not user:
-
-        session.clear()
-
-        return redirect("/next")
+        return "User not found"
 
     log = Log.query.filter_by(
         user_id=user.id,
@@ -554,46 +525,38 @@ def logout():
     ).first()
 
     if log:
-
         log.sign_out = now_sa()
-
         db.session.commit()
 
     session.clear()
 
-    return redirect("/next")
+    return redirect('/next')
 
-# =================== TERMS ===============================
+# ====================== NEXT ============================
+@app.route('/next')
+def next_visitor():
+    return render_template("next.html")
 
-@app.route("/terms")
+# ========================== TERMS ==========================
+@app.route('/terms')
 def terms():
 
-    return render_template(
-        "terms.html"
-    )
+    auto_signout_expired_users()
 
-# =================== NEXT ===============================
+    return render_template("terms.html")
 
-@app.route("/next")
-def next_visitor():
-
-    return render_template(
-        "next.html"
-    )
-
-# =================== SAVE ADMIN NOTE ===============================
-
-@app.route(
-    "/save_note",
-    methods=["POST"]
-)
+# ==================== SAVE NOTE ====================================
+@app.route('/save_note', methods=['POST'])
 def save_note():
 
-    if session.get("role") != "admin":
+    auto_signout_expired_users()
+
+    if session.get('role') != 'admin':
         return "Access denied"
 
-    mobile = request.form.get("mobile")
-    note = request.form.get("note")
+    mobile = request.form.get('mobile')
+
+    note = request.form.get('note')
 
     user = User.query.filter_by(
         mobile=mobile
@@ -614,14 +577,15 @@ def save_note():
 
         db.session.commit()
 
-    return redirect("/report")
+    return redirect('/report')
 
-# ====================== ADMIN REPORT ============================
-
-@app.route("/report")
+# ================= REPORT =================
+@app.route('/report')
 def report():
 
-    if session.get("role") != "admin":
+    auto_signout_expired_users()
+
+    if session.get('role') != 'admin':
         return "Access denied"
 
     data = db.session.query(
@@ -641,12 +605,13 @@ def report():
         data=data
     )
 
-# =================== CSV EXPORT ===============================
-
-@app.route("/export/csv")
+# ================= CSV EXPORT =================
+@app.route('/export/csv')
 def export_csv():
 
-    if session.get("role") != "admin":
+    auto_signout_expired_users()
+
+    if session.get('role') != 'admin':
         return "Access denied"
 
     rows = db.session.query(
@@ -665,29 +630,16 @@ def export_csv():
 
     writer = csv.writer(si)
 
-    writer.writerow(
-        [
-            "Name",
-            "Mobile",
-            "Role",
-            "Sign In",
-            "Sign Out",
-            "Note"
-        ]
-    )
+    writer.writerow([
+        "Name",
+        "Mobile",
+        "Role",
+        "Sign In",
+        "Sign Out",
+        "Note"
+    ])
 
-    for row in rows:
-
-        writer.writerow(
-            [
-                row.name,
-                row.mobile,
-                row.role,
-                row.sign_in,
-                row.sign_out,
-                row.note
-            ]
-        )
+    writer.writerows(rows)
 
     return Response(
         si.getvalue(),
@@ -698,10 +650,23 @@ def export_csv():
         }
     )
 
-# =================== RUN APPLICATION ===============================
+# ================= ADMIN SIGNOUT =================
+@app.route("/admin_signout/<int:user_id>", methods=["POST"])
+def admin_signout(user_id):
 
-if __name__ == "__main__":
+    if session.get("role") != "admin":
+        return "Access denied"
 
-    app.run(
-        debug=True
-    )
+    active_log = Log.query.filter_by(
+        user_id=user_id,
+        sign_out=None
+    ).first()
+
+    if active_log:
+        active_log.sign_out = now_sa()
+        db.session.commit()
+
+    return redirect("/report")
+# ================= RUN =================
+if __name__ == '__main__':
+    app.run(debug=True)
